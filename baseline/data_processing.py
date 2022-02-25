@@ -64,26 +64,30 @@ def get_data(city, start_time, end_time, current_day=False):
 
 
 # 加载 站点
-def load_station():
-    filename = base_path_1 + "Beijing_AirQuality_Stations_cn.xlsx"
-    data = xlrd.open_workbook(filename)
-    table = data.sheet_by_name(u'Sheet2')
-    nrows = table.nrows
-    #print(nrows)
-    bj_stations = {}
-    for i in range(0, nrows):
-        row = table.row_values(i)
-        print (row)
-        bj_stations[row[0]] = {}
-        bj_stations[row[0]]['lng'] = row[1]
-        bj_stations[row[0]]['lat'] = row[2]
-        bj_stations[row[0]]['type_id'] = int(row[-1])
-        #print(int(row[-1]))
-        bj_stations[row[0]]['station_num_id'] = i
 
-    filename = base_path_1 + "London_AirQuality_Stations.csv"
+#lng højre venstre
+#lat op og ned
+def load_station():
+    
+    #filename = base_path_1 + "Beijing_AirQuality_Stations_cn.xlsx"
+    #data = xlrd.open_workbook(filename)
+    #table = data.sheet_by_name(u'Sheet2')
+    #nrows = table.nrows
+    #print(nrows)
+    #bj_stations = {}
+    #for i in range(0, nrows):
+    #    row = table.row_values(i)
+    #    print (row)
+    #    bj_stations[row[0]] = {}
+    #    bj_stations[row[0]]['lng'] = row[1]
+    #    bj_stations[row[0]]['lat'] = row[2]
+    #    bj_stations[row[0]]['type_id'] = int(row[-1])
+        #print(int(row[-1]))
+    #    bj_stations[row[0]]['station_num_id'] = i
+    #filename = base_path_1 + "London_AirQuality_Stations.csv"
+    filename = base_path_1 + "aalborg_aq_station.csv" #TODO hardcode ikke godt, men det går for nu
     fr = open(filename)
-    ld_stations = {}
+    stations = {}
     flag = 0
     i = 0
     for line in fr.readlines():
@@ -91,19 +95,19 @@ def load_station():
             flag = 1
             continue
         row = line.strip().split(",")
-        ld_stations[row[0]] = {}
+        stations[row[0]] = {}
         if row[2] == "TRUE":
-            ld_stations[row[0]]['predict'] = True
+            stations[row[0]]['predict'] = True
         else:
-            ld_stations[row[0]]['predict'] = False
-        ld_stations[row[0]]['lng'] = float(row[5])
-        ld_stations[row[0]]['lat'] = float(row[4])
-        ld_stations[row[0]]['type_id'] = int(row[-1])
-        ld_stations[row[0]]['station_num_id'] = i
+            stations[row[0]]['predict'] = False
+        stations[row[0]]['lng'] = float(row[5])
+        stations[row[0]]['lat'] = float(row[4])
+        stations[row[0]]['type_id'] = int(row[-1])
+        stations[row[0]]['station_num_id'] = i
         i += 1
     stations = {}
-    stations["bj"] = bj_stations
-    stations["ld"] = ld_stations
+    #stations["bj"] = bj_stations
+    stations["aalborg"] = stations
     return stations
 
 
@@ -469,7 +473,10 @@ def process_loss_data(df, city, stations, length=24 * 3, pre_train_flag=True):
     for name, g in group:
         station_group[name] = g.sort_index()
         # print station_group[name]
-    if city == 'bj':
+    if city == "aalborg":
+          attr_need = ["CO", "NO2", "SO2","NO2","PM_2.5", 'time_year',
+                     'time_month', 'time_day', 'time_week', 'time_hour']  
+    elif city == 'bj':
         attr_need = ["PM25_Concentration", "PM10_Concentration", "O3_Concentration", 'time_year',
                      'time_month', 'time_day', 'time_week', 'time_hour']
         attr_need2 = ["PM25_Concentration", "PM10_Concentration", "O3_Concentration",
@@ -794,14 +801,11 @@ def model_1(city):
 
 
 #  缺失值填充入口
+#TODO denne skal gøres mere dynmamik
 def loss_data_process_main(pre_train_flag=True):
     stations = load_station()
-    city = 'bj'
-    df = load_data_process(city=city, current_day=False)
-    process_loss_data(df, city, stations, length=24 * 3, pre_train_flag=pre_train_flag)
-
-    # analysis(df, stations, city)
-    city = 'ld'
+    city = "aalborg"
+    #TODO pre_precessing/write_to_process skal gøre før denne function da den skal bruge filen som bliver gjørt
     df = load_data_process(city=city, current_day=False)
     process_loss_data(df, city, stations, length=24 * 3, pre_train_flag=pre_train_flag)
     # analysis(df, stations, city)

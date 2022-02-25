@@ -35,6 +35,12 @@ station_id_change = {
     'yongdingmennei_aq': 'yongdingme_aq'
 }
 
+#Vesterbro/8152: Gadestation (9^o55' 3" E, 57^o 3' 8" N) 57.050974, 9.916690
+#Gade_attr_need = ["CO", "NO2", "SO2","NO2","PM_2.5", 'time_year',
+#                     'time_month', 'time_day', 'time_week', 'time_hour']
+#Østerbro/8158:  Bybaggrundsstation(tagstation) ( 9^o55'51" E, 57^o 2'48"N) 57.046927339673985, 9.931002866878236
+#Tag_attr_need = ["NO2", "NOx", "O3","PM_2.5_lvs", 'time_year',
+#                     'time_month', 'time_day', 'time_week', 'time_hour']
 
 def get_train_test_data(city, length=24 * (3 * 7 + 2)):
     weather_attr_need = ['temperature', 'pressure', 'humidity']
@@ -44,8 +50,9 @@ def get_train_test_data(city, length=24 * (3 * 7 + 2)):
     else:
         attr_need = ["PM25_Concentration", "PM10_Concentration", 'time_year', 'time_month',
                      'time_day', 'time_week', 'time_hour']
-    stations = load_station()
-    ans_history = history_data(city=city, stations=stations, start_day="2017-08-01", end_day="2018-04-10")
+    stations = load_station() 
+    #TODO history_data kan ikke gøre unden process_lost_data er blevet kaldt og den ikke blevet kaldt før loss_data_process_main
+    ans_history = history_data(city=city, stations=stations, start_day="2017-08-01", end_day="2018-04-10") 
     weather_history = history_weather_data(city=city, start_day="2017-08-01", end_day="2018-04-10")
     ans_current = get_all_processing_data(city, start_day="2018-04-11", end_day="2018-04-29")
     weather_current = load_all_weather_data(city, start_day="2018-04-11", end_day="2018-04-29", crawl_data=True)
@@ -914,7 +921,7 @@ def lightgbm_run(day1, day2, caiyun=False):
 
 if __name__ == '__main__':
     city = "bj"
-    # get_train_test_data(city=city)
+    get_train_test_data(city=city)
     city = "ld"
     # get_train_test_data(city=city)
     cities = ['bj', 'ld']
