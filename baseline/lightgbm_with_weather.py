@@ -48,7 +48,7 @@ def get_train_test_data(city, length=24 * (3 * 7 + 2)):
     ans_history = history_data(city=city, stations=stations, start_day="2017-08-01", end_day="2018-04-10")
     weather_history = history_weather_data(city=city, start_day="2017-08-01", end_day="2018-04-10")
     ans_current = get_all_processing_data(city, start_day="2018-04-11", end_day="2018-04-29")
-    weather_current = load_all_weather_data(city, start_day="2018-04-11", end_day="2018-04-29", crawl_data=False)
+    weather_current = load_all_weather_data(city, start_day="2018-04-11", end_day="2018-04-29", crawl_data=True)
     weather_data = pd.concat([weather_history, weather_current["2018-04-11":"2018-04-29"]], axis=0)
     weather_groups = weather_data.groupby("station_id")
     # print ans_history
@@ -61,7 +61,8 @@ def get_train_test_data(city, length=24 * (3 * 7 + 2)):
         weather_data = weather_groups.get_group(grid_station).sort_index()
         station_num_id = stations[city][station]["station_num_id"]
         station_type_id = stations[city][station]["type_id"]
-        if ans_current.has_key(station):
+        print(ans_current)
+        if station in ans_current:
             group = pd.concat([ans_history[station], ans_current[station]["2018-04-11":"2018-04-29"]],
                               axis=0).sort_index()
         else:
@@ -195,6 +196,7 @@ def get_statistic_feature(data):
 
 def get_every_weekday_static(data):
     ans = []
+    print(data.shape[0])
     for i in range(data.shape[0]):
         tmp = data[i, :].reshape(-1, 24)
         mean_ = np.mean(tmp, axis=0)
@@ -222,8 +224,10 @@ def get_all_statistic_feature_1(data):
 
 
 def get_all_statistic_feature(data):
+    print(data)
     all_static = get_statistic_feature(data)
     every_weekday_static = get_every_weekday_static(data)
+    print(every_weekday_static)
     day_static = np.array([[] for i in range(data.shape[0])])
     for i in range(14, int(data.shape[1] / 24)):
         day_static = np.hstack((day_static, get_statistic_feature(data[:, i * 24:(i + 1) * 24])))
@@ -293,12 +297,12 @@ def get_holiday_weekend(data):
             else:
                 tmp.append(0)
             # 判断是否节假日
-            if holiday_flag.has_key(day_str):
+            if day_str in holiday_flag:
                 tmp.append(1)
             else:
                 tmp.append(0)
             # 判断是否工作
-            if (week >= 5 and (not work_flag.has_key(day_str))) or holiday_flag.has_key(day_str):
+            if (week >= 5 and (day_str not in work_flag)) or day_str in holiday_flag:
                 tmp.append(0)
             else:
                 tmp.append(1)
@@ -345,6 +349,7 @@ def get_all_feature_1(data, city, attr="PM25", length=3 * 7 * 24):
 
 
 def get_all_feature(data, city, attr="PM25", length=3 * 7 * 24):
+    print(city)
     onehot_feature = get_onehot_feature(data[:, :6], city)
     if city == 'bj':
         holiday_weekend_feature = get_holiday_weekend(data[:, 2:6])
@@ -385,7 +390,7 @@ def change_X_Y(X, Y):
 
 
 def load_train_test(city, attr, type="0301-0531_0801-0410", load_from_feature_file=False):
-    filename = base_path_2 + city + '_training_weather_' + type + '.csv'
+    filename = base_path_2 + city + '_training_weather_' + "0201-0531_0801-0429" + '.csv'
     data = np.loadtxt(filename, delimiter=",")
     if city == "bj":
         X_origin = data[:, :-48 * 3]
@@ -524,6 +529,7 @@ def smape_error(preds, train_data):
 
 def cal_best_params(city, attr, type="0301-0531_0801-0410", load_from_feature_file=False):
     # print params
+    print(city)
     train_X, test_X, train_Y, test_Y = load_train_test(city=city, attr=attr, type=type,
                                                        load_from_feature_file=load_from_feature_file)
     lgb_train = lgb.Dataset(train_X, train_Y)
@@ -535,6 +541,9 @@ def cal_best_params(city, attr, type="0301-0531_0801-0410", load_from_feature_fi
         'boosting_type': 'gbdt',
         'objective': 'regression_l2',
         'metric': {'l2', 'l1'},
+        "device": "gpu",
+        "gpu_platform_id": 0,
+        "gpu_device_id": 0,
         'max_depth': model_param['depth'],
         'num_leaves': model_param['leaf'],
         'min_data_in_leaf': 20,
@@ -544,6 +553,7 @@ def cal_best_params(city, attr, type="0301-0531_0801-0410", load_from_feature_fi
         'bagging_freq': 1,
         'bagging_seed': model_param['seed'],
         'verbose': 0
+        
     }
 
     print (params)
@@ -554,8 +564,9 @@ def cal_best_params(city, attr, type="0301-0531_0801-0410", load_from_feature_fi
         num_boost_round=5000,
         valid_sets=lgb_eval,
         feval=smape_error,
-        early_stopping_rounds=30,
+        early_stopping_rounds=2,
         verbose_eval=True
+        
     )
     model_param['tree'] = cv_results.best_iteration
     print (cv_results.best_iteration)
@@ -801,7 +812,7 @@ def predict(city, length=24 * (3 * 7 + 2), start_day="2018-04-11", end_day="2018
         else:
             pred_PM25 = model_PM25.predict(change_feature(PM25_feature[0]), num_iteration=nround['PM25'])
             pred_PM10 = model_PM10.predict(change_feature(PM10_feature[0]), num_iteration=nround['PM10'])
-        if station_id_change.has_key(station):
+        if station in station_id_change:
             station = station_id_change[station]
         if city == "bj":
             if feature_first == False:
@@ -902,9 +913,9 @@ def lightgbm_run(day1, day2, caiyun=False):
 
 
 if __name__ == '__main__':
-    # city = "bj"
+    city = "bj"
     # get_train_test_data(city=city)
-    # city = "ld"
+    city = "ld"
     # get_train_test_data(city=city)
     cities = ['bj', 'ld']
     attrs = ['PM25', 'PM10', 'O3']
@@ -913,44 +924,44 @@ if __name__ == '__main__':
     #     for attr in attrs:
     #         if city == "ld" and attr == 'O3':
     #             continue
-    #         best_params = cal_best_params(city, attr, type="2017_0101-2018_0410_less", load_from_feature_file=True)
-    #         print city, attr, best_params
-    #         params_file = open("lightgbm_best_params.txt", 'wb+')
+    #         best_params = cal_best_params(city, attr, type="2017_0101-2018_0410_less", load_from_feature_file=False)
+    #         print (city, attr, best_params)
+    #         params_file = open("lightgbm_best_params.txt", 'w+')
     #         params_file.write("city=" + city + ";attr=" + attr + "\nbest_params" + str(best_params) + "\n")
     #         params_file.close()
-    # type = "2017_0101-2018_0429_less"
-    # for city in cities:
-    #     for attr in attrs:
-    #         if city == "ld" and attr == 'O3':
-    #             continue
-    #         score = train(city=city, attr=attr, best_params1="1", type=type,
-    #                       load_from_feature_file=True)
-    #         print score
-    # for city in cities:
-    #     for attr in attrs:
-    #         if city == "ld" and attr == 'O3':
-    #             continue
-    #         print score
-    #         score = train(city=city, attr=attr, best_params1="2", type=type,
-    #                       load_from_feature_file=True)
-    #         print score
+    type = "2017_0101-2018_0429_less"
+    for city in cities:
+        for attr in attrs:
+            if city == "ld" and attr == 'O3':
+                continue
+            score = train(city=city, attr=attr, best_params1="1", type=type,
+                          load_from_feature_file=False)
+            print (score)
+    for city in cities:
+        for attr in attrs:
+            if city == "ld" and attr == 'O3':
+                continue
+            print (score)
+            score = train(city=city, attr=attr, best_params1="2", type=type,
+                          load_from_feature_file=False)
+            print (score)
 
-    # type = "0301-0531_0801-0410"
-    # for city in cities:
-    #     for attr in attrs:
-    #         if city == "ld" and attr == 'O3':
-    #             continue
-    #         score = train(city=city, attr=attr, best_params1="4", type=type,
-    #                       load_from_feature_file=True)
-    #         print score
-    # type = "2017_0101-2018_0429_less"
-    # for city in cities:
-    #     for attr in attrs:
-    #         if city == "ld" and attr == 'O3':
-    #             continue
-    #         score = train(city=city, attr=attr, best_params1="3", type=type,
-    #                       load_from_feature_file=True)
-    #         print score
+    type = "0301-0531_0801-0410"
+    for city in cities:
+        for attr in attrs:
+            if city == "ld" and attr == 'O3':
+                continue
+            score = train(city=city, attr=attr, best_params1="4", type=type,
+                          load_from_feature_file=False)
+            print (score)
+    type = "2017_0101-2018_0429_less"
+    for city in cities:
+        for attr in attrs:
+            if city == "ld" and attr == 'O3':
+                continue
+            score = train(city=city, attr=attr, best_params1="3", type=type,
+                          load_from_feature_file=False)
+            print (score)
     nround = {
         "bj": {
             'PM25': 800,
@@ -970,9 +981,9 @@ if __name__ == '__main__':
     # get_ans(type_="0301-0531_0801-0410", feature_first=True, start_day=start_day, end_day=end_day)
     # get_ans(type_="0301-0531_0801-0410", feature_first=False, start_day=start_day, end_day=end_day)
     # get_ans(type_="2017_0101-2018_0410_less", feature_first=False, start_day=start_day, end_day=end_day, nround=nround)
-    get_ans(type_="2017_0101-2018_0515_less", feature_first=False, start_day=start_day, end_day=end_day,
-            best_params="5",
-            caiyun=True)
+    #get_ans(type_="2017_0101-2018_0515_less", feature_first=False, start_day=start_day, end_day=end_day,
+     #       best_params="5",
+     #       caiyun=True)
     # get_test(type="0301-0531_0801-0410", feature_first=False, best_params="1")
     # get_test(type="2017_0101-2018_0410_less", feature_first=False, best_params="1")
     # get_test(type="2017_0101-2018_0429_less", feature_first=False, best_params="1")

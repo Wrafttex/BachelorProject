@@ -1,0 +1,2 @@
+city=ld;attr=PM10
+best_params{'lr': 0.005, 'depth': 10, 'tree': 4245, 'leaf': 400, 'sample': 0.9, 'seed': 3}

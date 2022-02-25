@@ -207,7 +207,7 @@ if __name__ == '__main__':
     time_now = time_now - timedelta(hours=8)
     start_day = (time_now - timedelta(days=2)).strftime('%Y-%m-%d')
     end_day = time_now.strftime('%Y-%m-%d')
-    print start_day
+    print(start_day)
     # start_day = '2018-05-03'
     # down_load('bj', start_day=start_day)
     # down_load('ld', start_day=start_day)

@@ -113,8 +113,12 @@ def load_data(city, start_time, end_time, current_day=False):
         #filename = base_path_2 + city + "_airquality_" + start_time + "_" + end_time + ".csv"
         filename = "C:/Users/Nobody/Documents/aau/6/jacob/KDD_CUP_2018-master/dataset/tmp/beijing_17_18_aq.csv"
     else:
-        filename = base_path_2 + city + "_airquality_current_day.csv"
-    df = pd.read_csv(filename, sep=',')
+        #filename = "C:/Users/Nobody/Documents/aau/6/jacob/KDD_CUP_2018-master/dataset/tmp/beijing_17_18_aq.csv"
+        filename = base_path_1 + city + "_aq_online.csv"
+    df = pd.read_csv(filename,low_memory=False, sep=',')
+    #df.rename(columns={'SO2': 'SO2_Concentration', 'NO2': 'NO2_Concentration',
+    #                            'PM10': 'PM10_Concentration', 'PM2.5': 'PM25_Concentration',"SO2":"SO2_Concentration",
+    #                            'utc_time': 'time', 'stationId': 'station_id'}, inplace=True)
     # print df.size
     if current_day == False:
         if city == 'ld':
@@ -131,8 +135,8 @@ def load_data(city, start_time, end_time, current_day=False):
                                 'MeasurementDateGMT': 'time', 'Station_ID': 'station_id'}, inplace=True)
             df = pd.concat([df, df1])
         else:
-            #filename = base_path_1 + 'beijing_17_18_aq.csv'
-            filename = "C:/Users/Nobody/Documents/aau/6/jacob/KDD_CUP_2018-master/dataset/tmp/beijing_17_18_aq.csv"
+            filename = base_path_1 + 'beijing_17_18_aq.csv'
+            #filename = "C:/Users/Nobody/Documents/aau/6/jacob/KDD_CUP_2018-master/dataset/tmp/beijing_17_18_aq.csv"
             df1 = pd.read_csv(filename, sep=',')
             df1.rename(columns={'SO2': 'SO2_Concentration', 'O3': 'O3_Concentration', 'CO': 'CO_Concentration',
                                 'NO2': 'NO2_Concentration', 'PM10': 'PM10_Concentration', 'PM2.5': 'PM25_Concentration',
@@ -145,6 +149,8 @@ def load_data(city, start_time, end_time, current_day=False):
                                 'utc_time': 'time', 'stationId': 'station_id'}, inplace=True)
             df = pd.concat([df, df1])
     # print df.size
+    print("\n")
+    print(df)
     df['time'] = pd.to_datetime(df['time'])
     df.index = df['time']
     df['time_week'] = df.index.map(lambda x: x.weekday)
@@ -152,6 +158,8 @@ def load_data(city, start_time, end_time, current_day=False):
     df['time_month'] = df.index.map(lambda x: x.month)
     df['time_day'] = df.index.map(lambda x: x.day)
     df['time_hour'] = df.index.map(lambda x: x.hour)
+    print
+    print(df)
     if city == "ld":
         df = df[["station_id", "PM25_Concentration", "PM10_Concentration", "NO2_Concentration",
                  'time_year', 'time_month', 'time_week', 'time_day', 'time_hour']]
@@ -665,7 +673,10 @@ def get_all_processing_data(city, start_day, end_day, down_load=False):
     f1 = open(base_path_3 + city + '_data_post.pkl', 'rb')
     data_post = pd.read_pickle(f1)
     #data_post = pickle.load(f1)
-    max_post_day = datetime_toString(data_post[data_post.keys()[0]]['time'].max() - timedelta(hours=23))
+    list_data_post = list(data_post.keys())
+    print(data_post.keys())
+    #print(data_post.keys()[1])
+    max_post_day = datetime_toString(data_post[list_data_post[0]]['time'].max() - timedelta(hours=23))
     # print df2
     one_day_after_max_post_day = datetime_toString(string_toDatetime(max_post_day) + timedelta(days=1))
     # data_post = data_post
@@ -785,9 +796,9 @@ def model_1(city):
 #  缺失值填充入口
 def loss_data_process_main(pre_train_flag=True):
     stations = load_station()
-    #city = 'bj'
-    #df = load_data_process(city=city, current_day=False)
-    #process_loss_data(df, city, stations, length=24 * 3, pre_train_flag=pre_train_flag)
+    city = 'bj'
+    df = load_data_process(city=city, current_day=False)
+    process_loss_data(df, city, stations, length=24 * 3, pre_train_flag=pre_train_flag)
 
     # analysis(df, stations, city)
     city = 'ld'
@@ -884,9 +895,9 @@ if __name__ == '__main__':
     训练模型 前三天预测后一个值
     利用模型预测对缺失数据进行填充
     '''
-    #loss_data_process_main(pre_train_flag=True)
-    #pre_main(city="bj")
-    #pre_main(city='ld')
+    loss_data_process_main(pre_train_flag=True)
+    pre_main(city="bj")
+    pre_main(city='ld')
     #ld training needs to be done
     loss_data_process_main(pre_train_flag=False)
 

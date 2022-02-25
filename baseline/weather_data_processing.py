@@ -13,9 +13,9 @@ import pandas as pd
 from unit import *
 from crawl_data import *
 
-base_path_1 = "../dataset/"
-base_path_2 = "../dataset/tmp/"
-base_path_3 = "../output/"
+base_path_1 = "./dataset/"
+base_path_2 = "./dataset/tmp/"
+base_path_3 = "./output/"
 
 nearst = {
     "bj": {'miyunshuiku_aq': 'beijing_grid_414', 'tiantan_aq': 'beijing_grid_303', 'yizhuang_aq': 'beijing_grid_323',
@@ -93,14 +93,14 @@ def load_nearst_contrary():
 # 加载 历史数据 2018年3月27号之前
 def load_data(city, flag=False):
     if city == "bj":
-        filename = base_path_1 + "Beijing_historical_meo_grid.csv"
+        filename = base_path_2 + "bj_historical_meo_grid.csv"
     else:
-        filename = base_path_1 + "London_historical_meo_grid.csv"
+        filename = base_path_2 + "ld_historical_meo_grid.csv"
     df = pd.read_csv(filename, sep=',')
     nearst_contrary = load_nearst_contrary()
-    df = df[df["stationName"].isin(nearst_contrary[city].keys())]
+    df = df[df["station_id"].isin(nearst_contrary[city].keys())]
     # df = df["stationName"].replace(nearst_contrary[city].keys(), nearst[city].keys())
-    df.rename(columns={'stationName': 'station_id', 'utc_time': 'time', 'wind_speed/kph': 'wind_speed'}, inplace=True)
+    df.rename(columns={'station_id': 'station_id', 'time': 'time', 'wind_speed': 'wind_speed'}, inplace=True)
     df['time'] = pd.to_datetime(df['time'])
     df.index = df['time']
     attr_need = ['station_id', 'time', 'temperature', 'pressure', 'humidity', 'wind_direction', 'wind_speed']
@@ -112,10 +112,11 @@ def load_data(city, flag=False):
 
 # 加载api获得的数据
 def load_data_api(city, current_flag=False):
-    if current_flag == True:
-        filename = base_path_2 + city + "_meteorology_grid_current_day.csv"
-    else:
-        filename = base_path_2 + city + "_meteorology_grid_2018-04-01-0_2018-04-10-23.csv"
+    # if current_flag == True:
+    #     filename = base_path_2 + city + "_meteorology_grid_current_day.csv"
+    # else:
+    #     filename = base_path_2 + city + "_historical_meo_grid_.csv"
+    filename = base_path_2 + city + "_historical_meo_grid.csv"
     df = pd.read_csv(filename, sep=',')
     # nearst_contrary = load_nearst_contrary()
     nearst_contrary = {
@@ -133,12 +134,13 @@ def load_data_api(city, current_flag=False):
                'beijing_grid_261': 'gucheng_aq', 'beijing_grid_262': 'zhiwuyuan_aq', 'beijing_grid_366': 'tongzhou_aq',
                'beijing_grid_324': 'nongzhanguan_aq', 'beijing_grid_240': 'mentougou_aq',
                'beijing_grid_323': 'yizhuang_aq'}}
-
+    print(df)
     df = df[df["station_id"].isin(nearst_contrary[city].keys())]
     df['time'] = pd.to_datetime(df['time'])
     df.index = df['time']
     attr_need = ['station_id', 'time', 'temperature', 'pressure', 'humidity', 'wind_direction', 'wind_speed']
     df = df[attr_need]
+    df.index.name = None
     return df
 
 
@@ -294,6 +296,7 @@ def processing_weather(df, start_time="2017-01-01 00:00:00", end_time="2018-04-1
     dates = pd.date_range(start_day, end_day, freq='60min')
     df1 = pd.DataFrame(index=dates)
     df1['time'] = df1.index.map(lambda x: x)
+    print(df)
     stations_group = df.groupby("station_id")
     ans = None
     for station_id, group in stations_group:
@@ -303,7 +306,12 @@ def processing_weather(df, start_time="2017-01-01 00:00:00", end_time="2018-04-1
         # if ans is None:
         #     print df1.values.shape
         #     print group
+        print("\n\n")
+        print(group["time"])
+        print("\n--------------\n--------------\n")
+        print(df1)
         group = pd.merge(df1, group, how='left')
+        print(group)
         # if ans is None:
         #     print group
         if ans is None:
@@ -323,14 +331,15 @@ def processing_weather(df, start_time="2017-01-01 00:00:00", end_time="2018-04-1
 
 
 # 历史天气数据 "2018-04-10"之前都有
-def history_weather_data(city, start_day="2017-01-01", end_day="2018-04-10"):
+def history_weather_data(city, start_day='2017-01-01', end_day='2018-04-10'):
     # df = load_data_api(city=city, current_flag=True)
     # df.to_csv(base_path_3 + city + '_weather_post.csv', index=False, sep=',')
     filename = base_path_3 + city + '_weather_history.csv'
     df = pd.read_csv(filename, sep=',')
     df['time'] = pd.to_datetime(df['time'])
     df.index = df['time']
-    df = df[start_day:end_day]
+    print(df.loc['2017-01'])
+    df = df.loc[start_day:end_day]
     return df
 
 
@@ -340,7 +349,7 @@ def weather_data_forecast():
     # wounder_staions = load_station_in_wounder()
     for city in nearst_wounder_station.keys():
         filename = base_path_2 + city + "_weather_forecast.csv"
-        fr = open(filename, 'wb')
+        fr = open(filename, 'w')
         fr.write("station_id,time,temperature,humidity,pressure,wind_speed,wind_direction\n")
         for grid_station in nearst_wounder_station[city].keys():
             # wounder_staion = nearst_wounder_station[city][grid_station]
@@ -470,12 +479,12 @@ def load_all_weather_data(city, start_day="2018-04-11", end_day="2018-04-18", cr
         df3 = processing_weather(df3, start_time=start_day + " 00:00:00", end_time=end_day + " 23:00:00")
     else:
         df3 = processing_weather(df3, start_time=start_day + " 00:00:00", end_time=one_day_before_end_day + " 23:00:00")
-    # print "-------------------------------------------\n", df3
-    print (one_day_after_max_post_day)
+    #print ("-------------------------------------------\n")
+    #print (df3.loc[one_day_after_max_post_day:])
     # print df2
     # print df3
     # print df3[one_day_after_max_post_day:]
-    df_post = pd.concat([df2, df3[one_day_after_max_post_day:]])
+    df_post = pd.concat([df2, df3.loc[one_day_after_max_post_day:]])
     # print df_post
     # df_post = df_post.drop_duplicates()
     df_post.to_csv(base_path_3 + city + '_weather_post.csv', index=False, sep=',')
@@ -486,9 +495,13 @@ def load_all_weather_data(city, start_day="2018-04-11", end_day="2018-04-18", cr
     one_day_after_max_post_day_new = datetime_toString(string_toDatetime(max_post_day_new) + timedelta(days=1))
 
     if crawl_data == True:
-        weather_data_forecast()
-    df4 = load_weather_forecast_data(city, caiyun=caiyun)
-    df = pd.concat([df_post, df4[one_day_after_max_post_day_new:]])
+       df4 = weather_data_forecast()
+    else:
+        df4 = load_weather_forecast_data(city, caiyun=caiyun)
+    if df4:
+        df = pd.concat([df_post, df4.loc[one_day_after_max_post_day_new:]])
+    else:
+        df = df_post
     # if string_toDatetime(two_day_after_end_day) > string_toDatetime(time_now):
     #     df = pd.concat([df_post, df4])
     # else:

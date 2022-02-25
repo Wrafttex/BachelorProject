@@ -1,4 +1,4 @@
-#!/usr/bin/python
+
 # -*- coding: UTF-8 -*-
 import bs4
 import re
@@ -205,6 +205,7 @@ def weather_station(year=2018, month=4, day=6, station_id="I11BAIZH2"):
 '''
 根据经纬度获取附近站点的天气情况
 根据经纬度获取近10天24小时的天气数据
+
 According to the longitude and latitude get near the site of the weather
 According to the longitude and latitude for nearly 10 days of weather data, 24 hours a day
 '''
@@ -219,7 +220,7 @@ def weather_lat_lng(lat, lng):
         lng) + '/forecast/daily/10day.json?apiKey=6532d6454b8aa370768e63d6ba5a832e&units=e'
     link4 = 'https://api-ak.wunderground.com/api/d8585d80376a429e/labels/hourly10day/lang:EN/units:english/bestfct:1/v:2.0/q/' + str(
         lat) + ',' + str(lng) + '.json?ttl=120'
-
+    print(link4)
     # try:
     #     respones1 = requests.get(link1)
     #     stations = json.loads(respones1.text)["stations"]
@@ -231,12 +232,14 @@ def weather_lat_lng(lat, lng):
     # forecasts_daily = json.loads(respones3.text)["forecasts"]
     respones4 = requests.get(link4)
     text = respones4.text
-    print (link4)
-    print (json.loads(text))
-    try:
-        history_hours = json.loads(text)["history"]['days'][0]['hours']
-    except:
-        history_hours = []
+    history_hours = []
+    if text:
+        print (link4)
+        print (json.loads(text))
+        try:
+            history_hours = json.loads(text)["history"]['days'][0]['hours']
+        except:
+            history_hours = []
     ans = {}
     # ans["stations"] = stations
     ans["forecasts_hours"] = forecasts_hours
@@ -299,11 +302,11 @@ def main():
     month = 4
     day = 8
     city = "London"
-    # ans = city_weather(year=year, month=month, day=day, city=city)
-    # print ans
-    weather_station(year=year, month=month, day=day)
-    lat = 40.039
-    lng = 116.395
+    ans = city_weather(year=year, month=month, day=day, city=city)
+    print(ans)
+    #weather_station(year=year, month=month, day=day)
+    #lat = 40.039
+    #lng = 116.395
     # weather_lat_lng(lat = lat, lng = lng)
     # find_station_information()
     # aqi_idx()
