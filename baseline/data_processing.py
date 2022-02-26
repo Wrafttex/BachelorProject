@@ -65,9 +65,10 @@ def get_data(city, start_time, end_time, current_day=False):
 
 # 加载 站点
 
-#lng højre venstre
-#lat op og ned
-def load_station():
+#NOTE lng højre venstre
+#NOTE lat op og ned
+#DONE given load_station city as a paremeter to make it more dynamic
+def load_station(city="aalborg"):
     
     #filename = base_path_1 + "Beijing_AirQuality_Stations_cn.xlsx"
     #data = xlrd.open_workbook(filename)
@@ -85,8 +86,8 @@ def load_station():
         #print(int(row[-1]))
     #    bj_stations[row[0]]['station_num_id'] = i
     #filename = base_path_1 + "London_AirQuality_Stations.csv"
-    filename = base_path_1 + "aalborg_aq_station.csv" #TODO hardcode ikke godt, men det går for nu
-    fr = open(filename)
+    filename = base_path_1 + city +"_aq_station.csv" #TODO city name is not hardcoded but maybe checker to see if the file exist should be done
+    fr = open(filename)                           
     stations = {}
     flag = 0
     i = 0
@@ -107,7 +108,7 @@ def load_station():
         i += 1
     stations = {}
     #stations["bj"] = bj_stations
-    stations["aalborg"] = stations
+    stations[city] = stations #DONE isn't hardcoded to one specific city
     return stations
 
 
@@ -115,17 +116,17 @@ def load_station():
 def load_data(city, start_time, end_time, current_day=False):
     if current_day == False:
         #filename = base_path_2 + city + "_airquality_" + start_time + "_" + end_time + ".csv"
-        filename = "C:/Users/Nobody/Documents/aau/6/jacob/KDD_CUP_2018-master/dataset/tmp/beijing_17_18_aq.csv"
+        filename = "C:/Users/Nobody/Documents/aau/6/jacob/KDD_CUP_2018-master/dataset/tmp/beijing_17_18_aq.csv" #TODO hardcoded
     else:
         #filename = "C:/Users/Nobody/Documents/aau/6/jacob/KDD_CUP_2018-master/dataset/tmp/beijing_17_18_aq.csv"
-        filename = base_path_1 + city + "_aq_online.csv"
+        filename = base_path_1 + city + "_aq_online.csv" 
     df = pd.read_csv(filename,low_memory=False, sep=',')
     #df.rename(columns={'SO2': 'SO2_Concentration', 'NO2': 'NO2_Concentration',
     #                            'PM10': 'PM10_Concentration', 'PM2.5': 'PM25_Concentration',"SO2":"SO2_Concentration",
     #                            'utc_time': 'time', 'stationId': 'station_id'}, inplace=True)
     # print df.size
     if current_day == False:
-        if city == 'ld':
+        if city == 'ld': #TODO change these if state so they're not hardcoded to one area
             filename = base_path_1 + 'London_historical_aqi_forecast_stations_20180331.csv'
             df1 = pd.read_csv(filename, sep=',')
             df1.rename(columns={'SO2': 'SO2_Concentration', 'NO2 (ug/m3)': 'NO2_Concentration',
@@ -817,7 +818,8 @@ filename = base_path_2 + city + "_airquality_processing.csv"
 filename = base_path_2 + city + "_current_day_processing.csv"
 '''
 
-
+#TODO check why they both of time and splitting of time, might be it should be the same as line 160
+#TODO change parameter to fit our time and cities as standard
 def write_to_process(df, start_time="2017-01-01 00:00:00", end_time="2018-04-10 23:00:00",
                      filename=base_path_2 + "bj_airquality_processing.csv"):
     df = df.drop_duplicates(["station_id", 'time_year', "time_month", "time_day", "time_hour"])
@@ -853,6 +855,7 @@ def write_to_process(df, start_time="2017-01-01 00:00:00", end_time="2018-04-10 
 
 
 # 预处理，去除重复的项，同时将不连续的时间修正
+#TODO parameter to fit our data
 def pre_precessing(city='bj'):
     # 处理4月10号之前的数据
     start_day = "2017-01-01"

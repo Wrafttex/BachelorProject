@@ -20,7 +20,7 @@ import lightgbm as lgb
 import pickle
 from weather_data_processing import *
 
-
+#TODO add NOTE and DONE as a custom tag search todo-tree tag to be able to add it
 base_path_1 = "./dataset/"
 base_path_2 = "./dataset/tmp/"
 base_path_3 = "./output/"
@@ -34,7 +34,7 @@ station_id_change = {
     'aotizhongxin_aq': 'aotizhongx_aq',
     'yongdingmennei_aq': 'yongdingme_aq'
 }
-
+#NOTE attr and position of where the station are 
 #Vesterbro/8152: Gadestation (9^o55' 3" E, 57^o 3' 8" N) 57.050974, 9.916690
 #Gade_attr_need = ["CO", "NO2", "SO2","NO2","PM_2.5", 'time_year',
 #                     'time_month', 'time_day', 'time_week', 'time_hour']
