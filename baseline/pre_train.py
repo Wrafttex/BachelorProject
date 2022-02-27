@@ -103,6 +103,7 @@ def onehot_mat(data, city):
 
 
 # 跑模型
+#TODO attribute are hardcoded
 def run(data, attribution, city):
     start_time = time.time()
     if attribution == "PM25":
