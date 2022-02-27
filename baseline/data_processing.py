@@ -305,9 +305,10 @@ def pre_train(station_group, city, stations, attr_need, length, day=None):
             tmp = np.array(tmp)
             if np.isnan(tmp).sum() > 0:
                 continue
-            ans_PM25 = model_predict(tmp, reg_PM25, city, stations, attribution="PM25")
+            ans_PM25 = model_predict(tmp, reg_PM25, city, stations, attribution="PM25") #TODO can be done as a for in loop
             ans_PM10 = model_predict(tmp, reg_PM10, city, stations, attribution="PM10")
             # print ans_PM25, ans_PM10
+            #TODO check what these if statement are checking for 
             if np.isnan(values2[0]) or values2[0] < 0:
                 values1[i + length, 0] = ans_PM25
                 nan_num += 1

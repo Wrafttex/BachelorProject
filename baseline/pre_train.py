@@ -51,6 +51,7 @@ def get_static(data):
 
 
 length = 24 * 3
+#TODO check if these are the best parameters and they're correct to the version we're using
 params = {
     # 'objective': myObjective6,
     'max_depth': 10,
@@ -71,6 +72,7 @@ params = {
 
 
 # 训练模型
+#NOTE trains and dumbs the data into a file 
 def model_train(params, train_X, test_X, train_Y, test_Y, model_file):
     reg = xgb.XGBRegressor(**params)
     reg.fit(train_X, train_Y, eval_set=[(train_X, train_Y), (test_X, test_Y)], verbose=100,
@@ -82,6 +84,7 @@ def model_train(params, train_X, test_X, train_Y, test_Y, model_file):
 
 
 # 矩阵onehot
+#TODO check what this function does, to see if it needs to be change
 def onehot_mat(data, city):
     ans = []
     for i in range(data.shape[0]):
