@@ -185,7 +185,8 @@ def model_predict(tmp, reg, city, stations, attribution):
     pred = reg.predict([test_X])
     return pred[0]
 
-
+#TODO attribute are hardcoded, we won't be able to get our model if not changed
+#NOTE is imported in data_proscessing.py as pre_main 
 def main(city):
     filename = BASEPATH + city + '_training_pre.csv'
     data = np.loadtxt(filename, delimiter=",")

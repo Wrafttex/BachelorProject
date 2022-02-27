@@ -263,6 +263,7 @@ def between_two_point(station_group, attr_need):
 
 
 # 利用预训练的模型 填补缺失值
+#TODO need to change to be able to open our air quality model
 def pre_train(station_group, city, stations, attr_need, length, day=None):
     model_file = base_path_2 + city + '_PM25_best.model'
     reg_PM25 = joblib.load(model_file)
@@ -340,6 +341,7 @@ def pre_train(station_group, city, stations, attr_need, length, day=None):
 
 
 # 加载预训练的数据
+#TODO in if statement check what the differes is between them, depending on it, might need to change it
 def pre_train_data(station_group, stations, city, attr_need, length):
     ans = []
     for station, group in station_group.items():
@@ -424,6 +426,7 @@ def KF1_padding(station_group, attr_need):
 
 
 # 前四天用整体的平均值填补
+#TODO if statements are hardcoded to only work with bj and ld, same with date_start variable 
 def four_days(df, station_group, city, attr_need):
     
     date_start = "2017-01-01"
@@ -467,6 +470,8 @@ def nan_data_static(station_group, city):
 
 
 # 处理丢失数据
+#DONE added if statement for aalborg
+#TODO if statement should be itself able to see what it needed 
 def process_loss_data(df, city, stations, length=24 * 3, pre_train_flag=True):
     ans_df = df.sort_index()
     group = ans_df.groupby("station_id")
@@ -888,6 +893,8 @@ def pre_precessing(city='bj'):
 
 from pre_train import main as pre_main
 
+#TODO pre_main is hardcoded 
+#NOTE loss_data_process_main only takes aalborg atm, but it and the following function inside of it should be made more dynamic
 if __name__ == '__main__':
     # analysis_station()
 
