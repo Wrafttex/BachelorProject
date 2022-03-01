@@ -95,11 +95,11 @@ def onehot_mat(data, city):
             tmp[39 + int(data[i, 2]) - 1] = 1
             tmp[46 + int(data[i, 3]) - 1] = 1
         else:
-            tmp = np.zeros(60)
+            tmp = np.zeros(100)
             tmp[int(data[i, 0]) - 1] = 1
-            tmp[5 + int(data[i, 1]) - 1] = 1
-            tmp[29 + int(data[i, 2]) - 1] = 1
-            tmp[36 + int(data[i, 3]) - 1] = 1
+            tmp[1 + int(data[i, 1]) - 1] = 1
+            tmp[69 + int(data[i, 2]) - 1] = 1
+            tmp[76 + int(data[i, 3]) - 1] = 1
         ans.append(tmp)
     ans = np.array(ans)
     return ans
@@ -113,25 +113,51 @@ def run(data, attribution, city):
         if city == "bj":
             X = data[:, :-3]
             Y = data[:, -3]
+        elif city == "Aalborg":
+            X = data[:,:-6]
+            Y = data[:,-6]
         else:
             X = data[:, :-2]
             Y = data[:, -2]
         data_2 = get_static(X[:, 4: 4 + length])
         static_day = get_static_day(X[:, 4: 4 + length])
-    elif attribution == "PM10":
-        if city == "bj":
-            X = data[:, :-3]
-            Y = data[:, -2]
-        else:
-            X = data[:, :-2]
-            Y = data[:, -1]
-        data_2 = get_static(X[:, 4 + length: 4 + length * 2])
-        static_day = get_static_day(X[:, 4: 4 + length])
+    elif attribution == "NO2":
+        if city == "Aalborg":
+            X = data[:,:-6]
+            Y = data[:,-5]
+            data_2 = get_static(X[:, 4 + length: 4 + length*2])
+            static_day = get_static_day(X[:, 4: 4 + length])
+    elif attribution == "SO2":
+        if city == "Aalborg":
+            X = data[:,:-6]
+            Y = data[:,-4]
+            data_2 = get_static(X[:, 4 + length*2: 4 + length*3])
+            static_day = get_static_day(X[:, 4: 4 + length])
+    elif attribution == "CO":
+        if city == "Aalborg":
+            X = data[:,:-6]
+            Y = data[:,-3]
+            data_2 = get_static(X[:, 4 + length*3: 4 + length*4])
+            static_day = get_static_day(X[:, 4: 4 + length])
+    elif attribution == "O3":
+        if city == "Aalborg":
+            X = data[:,:-6]
+            Y = data[:,-2]
+            data_2 = get_static(X[:, 4 + length*4: 4 + length*5])
+            static_day = get_static_day(X[:, 4: 4 + length])
+    elif attribution == "NOx":
+        if city == "Aalborg":
+            X = data[:,:-6]
+            Y = data[:,-1]
+            data_2 = get_static(X[:, 4 + length*5: 4 + length*6])
+            static_day = get_static_day(X[:, 4: 4 + length])
     else:
-        X = data[:, :-3]
-        Y = data[:, -1]
-        data_2 = get_static(X[:, 4 + length * 2: 4 + length * 3])
-        static_day = get_static_day(X[:, 4: 4 + length])
+        print("you done goof")
+         
+    # attr_need = ["PM25_Concentration","NO2_Concentration", "SO2_Concentration","CO_Concentration","O3_Concentration", "NOx_Concentration", 'time_year',
+    #                 'time_month', 'time_day', 'time_week', 'time_hour']   
+    #TODO onehot_mat don't think it is correct atm
+    
     data_1 = np.hstack((onehot_mat(X[:, :4], city), X[:, 4:], data_2, static_day))
     X = data_1
     train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size=0.2, random_state=11)
@@ -194,14 +220,14 @@ def model_predict(tmp, reg, city, stations, attribution):
 def main(city):
     filename = BASEPATH + city + '_training_pre.csv'
     data = np.loadtxt(filename, delimiter=",")
-    print (data.shape)
-    attribution = "PM25"
+    print (data)
+    attribution = "CO"
     run(data, attribution, city)
-    attribution = "PM10"
-    run(data, attribution, city)
-    if city == 'bj':
-        attribution = "O3"
-        run(data, attribution, city)
+    #attribution = "PM10"
+    #run(data, attribution, city)
+    #if city == 'bj':
+    #    attribution = "O3"
+    #    run(data, attribution, city)
 
 
 if __name__ == '__main__':
