@@ -107,49 +107,63 @@ def onehot_mat(data, city):
 
 # 跑模型
 #TODO attribute are hardcoded
-def run(data, attribution, city):
+def run(data, attribution, city,pos_station):
     start_time = time.time()
     if attribution == "PM25":
         if city == "bj":
             X = data[:, :-3]
             Y = data[:, -3]
-        elif city == "Aalborg":
+        elif pos_station == "Tag":
             X = data[:,:-6]
             Y = data[:,-6]
+        elif pos_station == "Gade":
+            X = data[:,:-4]
+            Y = data[:,-4]
+        
         else:
             X = data[:, :-2]
             Y = data[:, -2]
         data_2 = get_static(X[:, 4: 4 + length])
         static_day = get_static_day(X[:, 4: 4 + length])
     elif attribution == "NO2":
-        if city == "Aalborg":
-            X = data[:,:-6]
-            Y = data[:,-5]
+        if pos_station == "Gade":
+            X = data[:,:-4]
+            Y = data[:,-4]
+            data_2 = get_static(X[:, 4 + length: 4 + length*2])
+            static_day = get_static_day(X[:, 4: 4 + length])
+        elif pos_station == "Tag":
+            X = data[:,:-3]
+            Y = data[:,-3]
             data_2 = get_static(X[:, 4 + length: 4 + length*2])
             static_day = get_static_day(X[:, 4: 4 + length])
     elif attribution == "SO2":
-        if city == "Aalborg":
-            X = data[:,:-6]
-            Y = data[:,-4]
-            data_2 = get_static(X[:, 4 + length*2: 4 + length*3])
+        if pos_station == "Gade":
+            X = data[:,:-3]
+            Y = data[:,-3]
+            data_2 = get_static(X[:, 4 + length: 4 + length*2])
             static_day = get_static_day(X[:, 4: 4 + length])
     elif attribution == "CO":
-        if city == "Aalborg":
-            X = data[:,:-6]
-            Y = data[:,-3]
-            data_2 = get_static(X[:, 4 + length*3: 4 + length*4])
+        if pos_station == "Gade":
+            X = data[:,:-2]
+            Y = data[:,-2]
+            data_2 = get_static(X[:, 4 + length: 4 + length*2])
             static_day = get_static_day(X[:, 4: 4 + length])
     elif attribution == "O3":
-        if city == "Aalborg":
-            X = data[:,:-6]
-            Y = data[:,-2]
-            data_2 = get_static(X[:, 4 + length*4: 4 + length*5])
+        if pos_station == "Tag":
+            X = data[:,:-1]
+            Y = data[:,-1]
+            data_2 = get_static(X[:, 4 + length: 4 + length*2])
             static_day = get_static_day(X[:, 4: 4 + length])
     elif attribution == "NOx":
-        if city == "Aalborg":
-            X = data[:,:-6]
+        if pos_station == "Gade":
+            X = data[:,:-1]
             Y = data[:,-1]
-            data_2 = get_static(X[:, 4 + length*5: 4 + length*6])
+            data_2 = get_static(X[:, 4 + length: 4 + length*2])
+            static_day = get_static_day(X[:, 4: 4 + length])
+        elif pos_station == "Tag":
+            X = data[:,:-2]
+            Y = data[:,-2]
+            data_2 = get_static(X[:, 4 + length: 4 + length*2])
             static_day = get_static_day(X[:, 4: 4 + length])
     else:
         print("you done goof")
@@ -162,7 +176,7 @@ def run(data, attribution, city):
     X = data_1
     train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size=0.2, random_state=11)
     print (train_X.shape, test_X.shape, train_Y.shape, test_Y.shape)
-    model_file = BASEPATH + city + '_' + attribution + '_best.model'
+    model_file = BASEPATH + city+"_"+pos_station + '_' + attribution + '_best.model'
     model_train(params, train_X, test_X, train_Y, test_Y, model_file)
     end_time = time.time()
     print (end_time - start_time)
@@ -217,12 +231,18 @@ def model_predict(tmp, reg, city, stations, attribution):
 
 #TODO attribute are hardcoded, we won't be able to get our model if not changed
 #NOTE is imported in data_proscessing.py as pre_main 
-def main(city):
-    filename = BASEPATH + city + '_training_pre.csv'
+def main(city,pos_station="Gade"):
+    filename = BASEPATH + city+"_"+pos_station + '_training_pre.csv'
     data = np.loadtxt(filename, delimiter=",")
     print (data)
-    attribution = "CO"
-    run(data, attribution, city)
+    if pos_station=="Gade":      
+        attributions_list = ["NO2","SO2","CO","NOx"]
+        for attribution in attributions_list:
+            run(data, attribution, city,pos_station)
+    elif pos_station == "Tag":
+        attributions_list = ["NO2","O3","NOx"]
+        for attribution in attributions_list:
+            run(data, attribution, city,pos_station)
     #attribution = "PM10"
     #run(data, attribution, city)
     #if city == 'bj':

@@ -115,7 +115,8 @@ def load_station(city="Aalborg"):
 
 
 # 加载原始数据
-def load_data(city, start_time, end_time, current_day=False):
+#DONE csv files not merged to one, now are two because of aq paremeter not the same
+def load_data(city, start_time, end_time,pos_station, current_day=False):
     #if current_day == False:
         #filename = base_path_2 + city + "_airquality_" + start_time + "_" + end_time + ".csv"
     #    filename = "C:/Users/Nobody/Documents/aau/6/jacob/KDD_CUP_2018-master/dataset/tmp/beijing_17_18_aq.csv" #TODO hardcoded
@@ -159,29 +160,27 @@ def load_data(city, start_time, end_time, current_day=False):
         #                         'utc_time': 'time', 'stationId': 'station_id'}, inplace=True)
         #     df = pd.concat([df, df1])
         #DONE made if statement ofr aalborg with it taking both csv file and concat together
-        if city == "Aalborg": 
-            filename = base_path_1 + 'Aalborg_Gade.csv'
-            df = pd.read_csv(filename, sep=';',skiprows=2)                                           
-            df.rename(columns={'SO2': 'SO2_Concentration', 'NO2': 'NO2_Concentration',
-                     'PM10': 'PM10_Concentration', 'PM_2.5_Lvs': 'PM25_Concentration',
-                     'Recorded': 'time', 'Station_ID': 'station_id',"CO":"CO_Concentration","NOx":"NOx_Concentration","O3":"O3_Concentration"}, inplace=True)
-            df["station_id"] = "Vesterbro" 
-            df['time'] = pd.to_datetime(df['time'], format='%d-%m-%Y %H:%M:%S') #TODO in the future make a function to sort timeformat
-            df.sort_values(by="time",inplace=True,ascending=True)
+        if city == "Aalborg":
+            if pos_station == "Gade": 
+                filename = base_path_1 + 'Aalborg_Gade.csv'
+                df = pd.read_csv(filename, sep=';',skiprows=2)                                           
+                df.rename(columns={'SO2': 'SO2_Concentration', 'NO2': 'NO2_Concentration',
+                        'PM10': 'PM10_Concentration', 'PM_2.5_Lvs': 'PM25_Concentration',
+                        'Recorded': 'time', 'Station_ID': 'station_id',"CO":"CO_Concentration","NOx":"NOx_Concentration","O3":"O3_Concentration"}, inplace=True)
+                df["station_id"] = "Vesterbro" 
+                df['time'] = pd.to_datetime(df['time'], format='%d-%m-%Y %H:%M:%S') #TODO in the future make a function to sort timeformat
+                df.sort_values(by="time",inplace=True,ascending=True)
             #print(df)
-            
-            filename = base_path_1 + 'Aalborg_Tag.csv'
-            df1 = pd.read_csv(filename, sep=';',skiprows=2)
-            df1.rename(columns={'SO2': 'SO2_Concentration', 'NO2': 'NO2_Concentration',
-                     'PM10': 'PM10_Concentration', 'PM_2.5_Lvs': 'PM25_Concentration',
-                     'Recorded': 'time', 'Station_ID': 'station_id',"CO":"CO_Concentration","NOx":"NOx_Concentration","O3":"O3_Concentration"}, inplace=True)
-            df1["station_id"] = "Oesterbro"
-            df1['time'] = pd.to_datetime(df1['time'], format='%d-%m-%Y %H:%M:%S')
-            df1 = df1.sort_values(by="time")
+            elif pos_station == "Tag":
+                filename = base_path_1 + 'Aalborg_Tag.csv'
+                df = pd.read_csv(filename, sep=';',skiprows=2)
+                df.rename(columns={'SO2': 'SO2_Concentration', 'NO2': 'NO2_Concentration',
+                        'PM10': 'PM10_Concentration', 'PM_2.5_Lvs': 'PM25_Concentration',
+                        'Recorded': 'time', 'Station_ID': 'station_id',"CO":"CO_Concentration","NOx":"NOx_Concentration","O3":"O3_Concentration"}, inplace=True)
+                df["station_id"] = "Oesterbro"
+                df['time'] = pd.to_datetime(df['time'], format='%d-%m-%Y %H:%M:%S')
+                df = df.sort_values(by="time")
             #print(df1)
-            
-            df = pd.concat([df, df1])
-            df.fillna(0, inplace=True)
             #df['time'] = pd.to_datetime(df['time'], format='%d-%m-%Y %H:%M:%S')
             
     # print df.size
@@ -196,9 +195,13 @@ def load_data(city, start_time, end_time, current_day=False):
     df['time_hour'] = df.index.map(lambda x: x.hour)
     #print
     #print(df)
-    if city == "Aalborg":
+    if city == "Aalborg" and pos_station == "Gade":
         df = df[["station_id", "PM25_Concentration", "NO2_Concentration",
-                 'SO2_Concentration',"CO_Concentration","O3_Concentration","NOx_Concentration",
+                 'SO2_Concentration',"CO_Concentration","NOx_Concentration",
+                 'time_year', 'time_month', 'time_week', 'time_day', 'time_hour']]
+    elif city == "Aalborg" and pos_station == "Tag":
+        df = df[["station_id", "PM25_Concentration", "NO2_Concentration",
+                 "NOx_Concentration","O3_Concentration",
                  'time_year', 'time_month', 'time_week', 'time_day', 'time_hour']]
     elif city == "ld":
         df = df[["station_id", "PM25_Concentration", "PM10_Concentration", "NO2_Concentration",
@@ -217,9 +220,9 @@ def load_data(city, start_time, end_time, current_day=False):
 
 
 # 加载处理后的数据
-def load_data_process(city, current_day=False):
+def load_data_process(city,pos_station="Gade", current_day=False):
     if current_day == False:
-        filename = base_path_2 + city + "_airquality_processing.csv"
+        filename = base_path_2 + city+"_"+pos_station + "_airquality_processing.csv"
     else:
         filename = base_path_2 + city + "_current_day_processing.csv"
     df = pd.read_csv(filename, sep=',')
@@ -381,21 +384,39 @@ def pre_train(station_group, city, stations, attr_need, length, day=None):
 
 # 加载预训练的数据
 #TODO in if statement check what the differes is between them, depending on it, might need to change it
-def pre_train_data(station_group, stations, city, attr_need, length):
+def pre_train_data(station_group, stations, city, pos_station, attr_need, length):
     ans = []
+    print(pos_station)
     for station, group in station_group.items():
         values1 = group[attr_need].values
+        #print(values1)
+        #print(stations[city][station])
         # print "length: ", length
         # print "values1.shape", values1.shape
         for i in range(0, values1.shape[0] - length):
-            # print i
+            #print(i)
             #print("pre_train_data ",i)
             #print(stations[city][station]["type_id"], stations[city][station]["station_num_id"])
             #print("\n\n\n\n\n--------------------------------------------")
             #print(stations[city])
             tmp = [stations[city][station]["type_id"], stations[city][station]["station_num_id"]]
             tmp += list(values1[i + length, -2:])
+            #print(values1[i + length, -2:])
             if city == "bj":
+                values2 = values1[i: i + length, :3]
+                values2 = list(values2.T.flatten())
+                tmp += values2
+                values2 = values1[i + length, :3]
+                values2 = list(values2.flatten())
+                tmp += values2
+            elif pos_station == "Gade":
+                values2 = values1[i: i + length, :4]
+                values2 = list(values2.T.flatten())
+                tmp += values2
+                values2 = values1[i + length, :4]
+                values2 = list(values2.flatten())
+                tmp += values2
+            elif pos_station == "Tag":
                 values2 = values1[i: i + length, :3]
                 values2 = list(values2.T.flatten())
                 tmp += values2
@@ -409,14 +430,24 @@ def pre_train_data(station_group, stations, city, attr_need, length):
                 values2 = values1[i + length, :3]
                 values2 = list(values2.flatten())
                 tmp += values2
+                
             # print tmp
+            #print("before",tmp)
             tmp = np.array(tmp)
+            #print("after",tmp)
+            #print(np.isnan(tmp).sum())
+            #print(len(tmp))
+            #if i == 2:
+            #    time.sleep(1000000000000000000000000)
+            
             if np.isnan(tmp).sum() > 0:
+                #print("continue",tmp)
                 continue
+            #print("tmp",tmp)
             ans.append(tmp)
     ans = np.array(ans)
     print ("ans.shape", ans.shape)
-    np.savetxt(base_path_2 + city + '_training_pre.csv', ans, delimiter=',')
+    np.savetxt(base_path_2 + city+"_"+pos_station + '_training_pre.csv', ans, delimiter=',')
     return ans
 
 
@@ -470,11 +501,11 @@ def KF1_padding(station_group, attr_need):
 #TODO if statements are hardcoded to only work with bj and ld, same with date_start variable 
 def four_days(df, station_group, city, attr_need):
     
-    date_start = "2017-01-01"
+    date_start = "2021-01-14"
     group_ = df[date_start:].groupby(["station_id", 'time_week', 'time_hour'])
     for station, group in station_group.items():
         # print group["2017-01-01"]
-        values1 = group["2017-01-01":"2017-01-04"][attr_need].values
+        values1 = group["2021-01-14":"2021-01-14"][attr_need].values
         # print "1 ", values1
         for i in range(values1.shape[0]):
             if city == "bj":
@@ -486,6 +517,11 @@ def four_days(df, station_group, city, attr_need):
                     values1[i, 1] = values[1]
                 if np.isnan(values1[i, 2]) or values1[i, 2] < 0:
                     values1[i, 2] = values[2]
+            elif city == "Aalborg":
+                values = group_.get_group((station, values1[i, -2], values1[i, -1]))[
+                    ["PM25_Concentration", "PM10_Concentration", "O3_Concentration"]].mean().values
+                
+                
             else:
                 values = group_.get_group((station, values1[i, -2], values1[i, -1]))[
                     ["PM25_Concentration", "PM10_Concentration"]].mean().values
@@ -513,16 +549,20 @@ def nan_data_static(station_group, city):
 # 处理丢失数据
 #DONE added if statement for aalborg
 #TODO if statement should be itself able to see what it needed 
-def process_loss_data(df, city, stations, length=24 * 3, pre_train_flag=True):
+def process_loss_data(df, city, pos_station, stations, length=24 * 3, pre_train_flag=True):
     ans_df = df.sort_index()
     group = ans_df.groupby("station_id")
     station_group = {}
     for name, g in group:
         station_group[name] = g.sort_index()
         # print station_group[name]
-    if city == "Aalborg": #header: time,time_week,time_year,time_month,time_day,time_hour,station_id,PM25_Concentration,NO2_Concentration,SO2_Concentration,CO_Concentration,NOx_Concentration,O3_Concentration
-          attr_need = ["PM25_Concentration","NO2_Concentration", "SO2_Concentration","CO_Concentration","O3_Concentration", "NOx_Concentration", 'time_year',
+    if pos_station == "Gade": #header: time,time_week,time_year,time_month,time_day,time_hour,station_id,PM25_Concentration,NO2_Concentration,SO2_Concentration,CO_Concentration,NOx_Concentration,O3_Concentration
+        attr_need = ["NO2_Concentration", "SO2_Concentration","CO_Concentration", "NOx_Concentration", 'time_year',
                      'time_month', 'time_day', 'time_week', 'time_hour']  
+    elif pos_station =="Tag":
+        attr_need = ["NO2_Concentration","O3_Concentration", "NOx_Concentration", 'time_year',
+                     'time_month', 'time_day', 'time_week', 'time_hour']  
+    
     elif city == 'bj':
         attr_need = ["PM25_Concentration", "PM10_Concentration", "O3_Concentration", 'time_year',
                      'time_month', 'time_day', 'time_week', 'time_hour']
@@ -549,8 +589,8 @@ def process_loss_data(df, city, stations, length=24 * 3, pre_train_flag=True):
     #     if len(neighborhood)==0:
     #         continue
     if pre_train_flag == True:
-        print("test",station_group)
-        ans = pre_train_data(station_group, stations, city, attr_need, length)
+        #print("test",station_group)
+        ans = pre_train_data(station_group, stations, city, pos_station, attr_need, length)
     else:
         print("before four days")
         four_days(ans_df, station_group, city, attr_need)
@@ -850,12 +890,13 @@ def model_1(city):
 
 #  缺失值填充入口
 #TODO denne skal gøres mere dynmamik
-def loss_data_process_main(pre_train_flag=True):
+def loss_data_process_main(pos_station="Gade",pre_train_flag=True):
     stations = load_station()
     city = "Aalborg"
     #TODO pre_precessing/write_to_process skal gøre før denne function da den skal bruge filen som bliver gjørt
-    df = load_data_process(city=city, current_day=False)
-    process_loss_data(df, city, stations, length=24 * 3, pre_train_flag=pre_train_flag)
+    df = load_data_process(city=city,pos_station=pos_station, current_day=False)
+    #print(df)
+    process_loss_data(df, city,pos_station, stations, length=24 * 3, pre_train_flag=pre_train_flag)
     # analysis(df, stations, city)
 
 
@@ -903,8 +944,9 @@ def write_to_process(df, start_time="2017-01-01 00:00:00", end_time="2018-04-10 
 
 # 预处理，去除重复的项，同时将不连续的时间修正
 #TODO parameter to fit our data
-#DONE changed start_day and end_day to fit our timeframe
-def pre_precessing(city='bj'):
+#DONE changed start_day and end_day to fit our timeframe'
+#DONE has parameter pos_station to separate the stations
+def pre_precessing(city='Aalborg', pos_station = "Gade"):
     # 处理4月10号之前的数据
     start_day = "2021-01-14"
     start_time = start_day + "-0" #2017-01-01-0
@@ -912,9 +954,10 @@ def pre_precessing(city='bj'):
     end_time = end_day + "-0" #2018-04-10-23
     start_time_1 = start_day + " 00:00:00"
     end_time_1 = end_day + " 23:00:00"
+    
     # get_data(city, start_time, end_time)
-    df = load_data(city, start_time, end_time)
-    filename = base_path_2 + city + "_airquality_processing.csv"
+    df = load_data(city, start_time, end_time,pos_station)
+    filename = base_path_2 + city+"_"+pos_station + "_airquality_processing.csv"
     #TODO some days are missing a ton of timeframe data (not our mistake)
     write_to_process(df, start_time=start_time_1, end_time=end_time_1, filename=filename)
 
@@ -948,7 +991,8 @@ if __name__ == '__main__':
     预处理，去除重复的项，同时将不连续的时间修正
     '''
     #pre_precessing(city='bj')
-    #pre_precessing(city="Aalborg")
+    #pre_precessing(city="Aalborg",pos_station="Tag")
+    #pre_precessing(city="Aalborg",pos_station="Gade")
     #pre_precessing(city='ld')
 
     '''
@@ -956,12 +1000,14 @@ if __name__ == '__main__':
     训练模型 前三天预测后一个值
     利用模型预测对缺失数据进行填充
     '''
-    #loss_data_process_main(pre_train_flag=True)
-    pre_main(city="Aalborg")
+    #loss_data_process_main(pos_station="Gade",pre_train_flag=True)
+    #loss_data_process_main(pos_station="Tag",pre_train_flag=True)
+    pre_main(city="Aalborg",pos_station="Gade")
+    pre_main(city="Aalborg",pos_station="Tag")
     #pre_main(city="bj")
     #pre_main(city='ld')
     #ld training needs to be done
-    #loss_data_process_main(pre_train_flag=False)
+    loss_data_process_main(pre_train_flag=False)
 
     '''
     获取全部的数据
