@@ -10,9 +10,9 @@ from unit import *
 
 # from rule import *
 
-base_path_1 = "../dataset/"
-base_path_2 = "../dataset/tmp/"
-base_path_3 = "../output/"
+base_path_1 = "./dataset/"
+base_path_2 = "./dataset/tmp/"
+base_path_3 = "./output/"
 
 
 def ensemble(file1, file2, file3, a):
@@ -1257,7 +1257,7 @@ if __name__ == '__main__':
     # file3 = base_path_3 + "2018-05-18-lightgbm_weather_params_1_2017_0101-2018_0429_less_False_piu_0.5.csv"
     # ensemble_medians_with_weight([file1, file2], [0.1, 0.9], file3)
     day = "27"
-    base_path_4 = '../image/results/201805' + day + '/'
+    base_path_4 = './image/results/201805' + day + '/'
     file1 = base_path_4 + "2018-05-" + day + "lightgbm_ensemble_mean_4.csv"
     file2 = base_path_4 + "piu_091_lightgbm_weather_params_5_2017_0101-2018_0515_less_False_009.csv"
     file3 = base_path_4 + "2018-05-" + day + "test.csv"

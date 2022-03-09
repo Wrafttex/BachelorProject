@@ -95,7 +95,7 @@ def onehot_mat(data, city):
             tmp[39 + int(data[i, 2]) - 1] = 1
             tmp[46 + int(data[i, 3]) - 1] = 1
         else:
-            tmp = np.zeros(100)
+            tmp = np.zeros(100) # was 60
             tmp[int(data[i, 0]) - 1] = 1
             tmp[1 + int(data[i, 1]) - 1] = 1
             tmp[69 + int(data[i, 2]) - 1] = 1
@@ -138,14 +138,14 @@ def run(data, attribution, city,pos_station):
             static_day = get_static_day(X[:, 4: 4 + length])
     elif attribution == "SO2":
         if pos_station == "Gade":
-            X = data[:,:-3]
-            Y = data[:,-3]
+            X = data[:,:-2]
+            Y = data[:,-2]
             data_2 = get_static(X[:, 4 + length: 4 + length*2])
             static_day = get_static_day(X[:, 4: 4 + length])
     elif attribution == "CO":
         if pos_station == "Gade":
-            X = data[:,:-2]
-            Y = data[:,-2]
+            X = data[:,:-1]
+            Y = data[:,-1]
             data_2 = get_static(X[:, 4 + length: 4 + length*2])
             static_day = get_static_day(X[:, 4: 4 + length])
     elif attribution == "O3":
@@ -156,8 +156,8 @@ def run(data, attribution, city,pos_station):
             static_day = get_static_day(X[:, 4: 4 + length])
     elif attribution == "NOx":
         if pos_station == "Gade":
-            X = data[:,:-1]
-            Y = data[:,-1]
+            X = data[:,:-3]
+            Y = data[:,-3]
             data_2 = get_static(X[:, 4 + length: 4 + length*2])
             static_day = get_static_day(X[:, 4: 4 + length])
         elif pos_station == "Tag":
@@ -215,15 +215,35 @@ def model_predict(tmp, reg, city, stations, attribution):
     one_hot_hour = onehot(int(tmp[3]), 24)
     one_hot_all = np.hstack((one_hot_type_id, one_hot_station_id, one_hot_week, one_hot_hour))
     # print one_hot_all.shape
-    if attribution == "PM25":
+    if attribution == "NO2":
         static = get_static_one_sample(tmp[4:4 + length])
         static_day = get_static_one_sample_day(tmp[4:4 + length])
-    elif attribution == "PM10":
+    elif attribution == "NOx":
         static = get_static_one_sample(tmp[4 + length: 4 + length * 2])
         static_day = get_static_one_sample_day(tmp[4 + length: 4 + length * 2])
-    else:
+    elif attribution == "SO2":
         static = get_static_one_sample(tmp[4 + length * 2: 4 + length * 3])
         static_day = get_static_one_sample_day(tmp[4 + length * 2: 4 + length * 3])
+    elif attribution == "O3":
+        static = get_static_one_sample(tmp[4 + length * 2: 4 + length * 3])
+        static_day = get_static_one_sample_day(tmp[4 + length * 2: 4 + length * 3])
+    elif attribution == "CO":
+        static = get_static_one_sample(tmp[4 + length * 3: 4 + length * 4])
+        static_day = get_static_one_sample_day(tmp[4 + length * 3: 4 + length * 4])
+    
+    
+    
+    
+    
+    # if attribution == "PM25":
+    #     static = get_static_one_sample(tmp[4:4 + length])
+    #     static_day = get_static_one_sample_day(tmp[4:4 + length])
+    # elif attribution == "PM10":
+    #     static = get_static_one_sample(tmp[4 + length: 4 + length * 2])
+    #     static_day = get_static_one_sample_day(tmp[4 + length: 4 + length * 2])
+    # else:
+    #     static = get_static_one_sample(tmp[4 + length * 2: 4 + length * 3])
+    #     static_day = get_static_one_sample_day(tmp[4 + length * 2: 4 + length * 3])
     test_X = np.hstack((one_hot_all, tmp[4:], static, static_day))
     # print test_X
     pred = reg.predict([test_X])

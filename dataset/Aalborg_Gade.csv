@@ -1,6 +1,6 @@
 Data opsamlet af Aarhus Universitet. Institut for Miljoevidenskab <br> Data er kvalitetskontrolleret til 1. april 2021. Data efter denne dato er ikke manuelt kontrolleret og kan indeholde fejl <br>For yderligere information se https://envs.au.dk/faglige-omraader/luftforurening-udledninger-og-effekter/luftforurening/ eller kontakt Thomas Ellermann tel@envs.au.dk <br> <br>Gasser: NO2: Kvælstofdioxid µg/m<sup>3</sup>. NOx: Kvælstofoxider µg/m<sup>3</sup>. O3: Ozon µg/m<sup>3</sup>
 Data fra Aalborg Tag
-Recorded;CO;NO2;SO2;NOx;PM_2.5_Lvs;comment
+Recorded;CO;NO2;SO2;NOx;PM_2.5_Lvs;comment;
 15-01-2022 00:00:00;0.09;3.39;0.4;7.34;;Data er manuelt kontrolleret
 14-01-2022 23:30:00;0.1;4.19;0.27;8.01;;Data er manuelt kontrolleret
 14-01-2022 23:00:00;0.13;10.54;0.32;16.73;;Data er manuelt kontrolleret
