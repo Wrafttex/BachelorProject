@@ -70,23 +70,7 @@ def get_data(city, start_time, end_time, current_day=False):
 #NOTE lat op og ned
 #DONE given load_station city as a paremeter to make it more dynamic
 def load_station(city="Aalborg"):
-    
-    #filename = base_path_1 + "Beijing_AirQuality_Stations_cn.xlsx"
-    #data = xlrd.open_workbook(filename)
-    #table = data.sheet_by_name(u'Sheet2')
-    #nrows = table.nrows
-    #print(nrows)
-    #bj_stations = {}
-    #for i in range(0, nrows):
-    #    row = table.row_values(i)
-    #    print (row)
-    #    bj_stations[row[0]] = {}
-    #    bj_stations[row[0]]['lng'] = row[1]
-    #    bj_stations[row[0]]['lat'] = row[2]
-    #    bj_stations[row[0]]['type_id'] = int(row[-1])
-        #print(int(row[-1]))
-    #    bj_stations[row[0]]['station_num_id'] = i
-    #filename = base_path_1 + "London_AirQuality_Stations.csv"
+
     filename = base_path_1 + city +"_aq_station.csv" #TODO city name is not hardcoded but maybe checker to see if the file exist should be done
     fr = open(filename)                           
     aalborg_stations = {}
@@ -127,7 +111,7 @@ def load_data(city, start_time, end_time,pos_station, current_day=False):
                         'PM10': 'PM10_Concentration', 'PM_2.5_Lvs': 'PM25_Concentration',
                         'Recorded': 'time', 'Station_ID': 'station_id',"CO":"CO_Concentration","NOx":"NOx_Concentration","O3":"O3_Concentration"}, inplace=True)
                 df["station_id"] = "Vesterbro" 
-                df['time'] = pd.to_datetime(df['time'], format='%-%m-%Y %H:%M:%S') #TODO in the future make a function to sort timeformat
+                df['time'] = pd.to_datetime(df['time'], format='%d-%m-%Y %H:%M:%S') #TODO in the future make a function to sort timeformat
                 df.sort_values(by="time",inplace=True,ascending=True)
             #print(df)
             elif pos_station == "Tag":
@@ -191,20 +175,13 @@ def load_data(city, start_time, end_time,pos_station, current_day=False):
                  "NOx_Concentration","O3_Concentration",
                  'time_year', 'time_month', 'time_week', 'time_day', 'time_hour']]
     elif city == "Aalborg" and pos_station == "Gade":
-        df = df[["station_id", "PM25_Concentration", "NO2_Concentration", "NOx_Concentration",
+        df = df[["station_id", "NO2_Concentration", "NOx_Concentration",
                  'SO2_Concentration',"CO_Concentration",
                  'time_year', 'time_month', 'time_week', 'time_day', 'time_hour']]
     elif city == "Aalborg" and pos_station == "Tag":
-        df = df[["station_id", "PM25_Concentration", "NO2_Concentration",
+        df = df[["station_id", "NO2_Concentration",
                  "NOx_Concentration","O3_Concentration",
                  'time_year', 'time_month', 'time_week', 'time_day', 'time_hour']]
-    elif city == "ld":
-        df = df[["station_id", "PM25_Concentration", "PM10_Concentration", "NO2_Concentration",
-                 'time_year', 'time_month', 'time_week', 'time_day', 'time_hour']]
-    else:
-        df = df[["station_id", "PM25_Concentration", "PM10_Concentration", "O3_Concentration", "CO_Concentration",
-                 "NO2_Concentration", "SO2_Concentration", 'time_year', 'time_month', 'time_week', 'time_day',
-                 'time_hour']]
         
     # print df
     # df = df.dropna(axis=0)
@@ -220,7 +197,7 @@ def load_data_process(city,pos_station="Gade", current_day=False):
     if current_day == False:
         filename = base_path_2 + city+"_"+pos_station + "_airquality_processing.csv"
     else:
-        filename = base_path_2 + city + "_current_day_processing.csv"
+        filename = base_path_2 + city +"_"+pos_station+ "_current_day_processing.csv"
     df = pd.read_csv(filename, sep=',')
     df['time'] = pd.to_datetime(df['time'])
     df.index = df['time']
@@ -426,14 +403,7 @@ def pre_train_data(station_group, stations, city, pos_station, attr_need, length
             tmp = [stations[city][station]["type_id"], stations[city][station]["station_num_id"]]
             tmp += list(values1[i + length, -2:])
             #print(values1[i + length, -2:])
-            if city == "bj":
-                values2 = values1[i: i + length, :3]
-                values2 = list(values2.T.flatten())
-                tmp += values2
-                values2 = values1[i + length, :3]
-                values2 = list(values2.flatten())
-                tmp += values2
-            elif pos_station == "Gade":
+            if pos_station == "Gade":
                 values2 = values1[i: i + length, :4]
                 values2 = list(values2.T.flatten())
                 tmp += values2
@@ -518,17 +488,6 @@ def train_data(station_group, stations, city, pos_station, attr_need, length):
     return ans
 
 
-# KF1和KC1同一个站点，保留KF1
-def KF1_padding(station_group, attr_need):
-    KF1_values = station_group["KF1"][attr_need].values
-    KC1_values = station_group["KC1"][attr_need].values
-    print ("KF1_padding ",KF1_values.shape, KC1_values.shape)
-    for i in range(KC1_values.shape[0]):
-        for j in range(KC1_values.shape[1]):
-            if np.isnan(KF1_values[i, j]):
-                KF1_values[i, j] = KC1_values[i, j]
-    station_group["KF1"].loc[:, attr_need] = KF1_values
-
 
 # 前四天用整体的平均值填补
 #TODO if statements are hardcoded to only work with bj and ld, same with date_start variable 
@@ -595,24 +554,6 @@ def process_loss_data(df, city, pos_station, stations, length=24 * 3, pre_train_
     elif pos_station =="Tag":
         attr_need = ["NO2_Concentration","O3_Concentration", "NOx_Concentration", 'time_year',
                      'time_month', 'time_day', 'time_week', 'time_hour']  
-    
-    elif city == 'bj':
-        attr_need = ["PM25_Concentration", "PM10_Concentration", "O3_Concentration", 'time_year',
-                     'time_month', 'time_day', 'time_week', 'time_hour']
-        attr_need2 = ["PM25_Concentration", "PM10_Concentration", "O3_Concentration",
-                      "CO_Concentration", "NO2_Concentration", "SO2_Concentration", 'time_year', 'time_month',
-                      'time_day', 'time_week', 'time_hour']
-    else:
-        attr_need = ["PM25_Concentration", "PM10_Concentration", 'time_year', 'time_month',
-                     'time_day', 'time_week', 'time_hour']
-        attr_need2 = ["PM25_Concentration", "PM10_Concentration",
-                      "NO2_Concentration", 'time_year', 'time_month',
-                      'time_day', 'time_week', 'time_hour']
-        pass
-    if city == "ld":
-        # KC1填补KF1 同一个站点
-        KF1_padding(station_group, attr_need)
-        pass
     #print("station___:",station_group)
     between_two_point(station_group, attr_need)
     # neighborhood_k = KNN(station_group, attr="PM10_Concentration")
@@ -646,7 +587,7 @@ def process_loss_data(df, city, pos_station, stations, length=24 * 3, pre_train_
 
 
 # 从处理好的历史数据中获取对应时间的数据
-def history_data(city, stations,pos_station="Gade", start_day="2017-01-01", end_day="2018-04-10"):
+def history_data(city, stations,pos_station="Gade", start_day="2022-01-05", end_day="2018-04-10"):
     import pickle
     f1 = open(base_path_3 + city+"_"+pos_station + '_data_processing.pkl', 'rb')
     # f1 = file(base_path_3 + city + '_data_history_KNN.pkl', 'rb')
@@ -664,10 +605,10 @@ def history_data(city, stations,pos_station="Gade", start_day="2017-01-01", end_
         # print group["station_id"]
         # group["station_id"] = np.array([station]*group.values.shape[0])
         if pos_station == "Gade": #header: time,time_week,time_year,time_month,time_day,time_hour,station_id,PM25_Concentration,NO2_Concentration,SO2_Concentration,CO_Concentration,NOx_Concentration,O3_Concentration
-            values = group[["NO2_Concentration", "NOx_Concentration", "SO2_Concentration","CO_Concentration","time",  'time_year',
+            values = group[["station_id","NO2_Concentration", "NOx_Concentration", "SO2_Concentration","CO_Concentration","time",  'time_year',
                      'time_month', 'time_day', 'time_week', 'time_hour']] 
         elif pos_station =="Tag":
-            values = group[["NO2_Concentration","O3_Concentration", "NOx_Concentration", 'time_year',"time",
+            values = group[["station_id","NO2_Concentration","O3_Concentration", "NOx_Concentration", 'time_year',"time",
                      'time_month', 'time_day', 'time_week', 'time_hour'] ] 
         else:
             values = group[
@@ -681,32 +622,6 @@ def history_data(city, stations,pos_station="Gade", start_day="2017-01-01", end_
         
     return ans
 
-
-def history_data_1(city, stations, start_day="2017-01-01", end_day="2018-04-10"):
-    import pickle
-    # f1 = file(base_path_3 + city + '_data_processing.pkl', 'rb')
-    f1 = open(base_path_3 + city + '_data_history_KNN.pkl', 'rb')
-    station_group = pickle.load(f1)
-    city_station = stations[city]
-    ans = {}
-    for station, group in station_group.items():
-        group = group[start_day: end_day]
-        # print group["station_id"]
-        # group["station_id"] = np.array([station]*group.values.shape[0])
-        if city == "ld":
-            # if city_station[station]["predict"] == False:
-            #     continue
-            values = group[
-                ["station_id", 'PM25_Concentration', 'PM10_Concentration', 'NO2_Concentration', 'time_year',
-                 'time_month', 'time_week', 'time_day', 'time_hour']]  # .values
-        else:
-            values = group[
-                ["station_id", 'PM25_Concentration', 'PM10_Concentration', 'O3_Concentration', 'CO_Concentration',
-                 'NO2_Concentration', 'SO2_Concentration', 'time_year', 'time_month', 'time_week', 'time_day',
-                 'time_hour']]  # .values
-        ans[station] = values
-        # print values
-    return ans
 
 
 '''
@@ -752,59 +667,7 @@ def post_data(city="Aalborg",pos_station="Gade"):
     write_to_process(df, start_time=current_start_time_1, end_time=current_end_time_1, filename=filename)
 
 
-# 获取所有的数据进行预测
-def get_all_processing_data_1(city, start_day, end_day, down_load=False):
-    stations = load_station()
-    import pickle
-    f1 = open(base_path_3 + city + '_data_post.pkl', 'rb')
-    data_post = pickle.load(f1)
-
-    start_time = start_day + "-0"
-    end_time = end_day + "-23"
-    three_day_before_start_day = datetime_toString(string_toDatetime(start_day) - timedelta(days=3))
-    one_day_before_end_day = datetime_toString(string_toDatetime(end_day) - timedelta(days=1))
-    one_day_before_start_day = datetime_toString(string_toDatetime(start_day) - timedelta(days=1))
-    if down_load:
-        get_data(start_time=start_time, end_time=end_time, city=city, current_day=True)
-    df = load_data(city=city, start_time=start_time, end_time=end_time, current_day=True)
-    filename = base_path_2 + city + "_current_day_processing.csv"
-    start_time_1 = start_day + " 00:00:00"
-    end_time_1 = datetime_toString(string_toDatetime(end_day) + timedelta(days=2)) + " 23:00:00"
-    write_to_process(df, start_time=start_time_1, end_time=end_time_1, filename=filename)
-
-    data_current = load_data_process(city=city, current_day=True)
-    current_group = data_current.groupby("station_id")
-    data_current = {}
-    for station, group in current_group:
-        data_current[station] = group
-    # print data_post, data_history, data_current
-    station_group = {}
-    for station in data_post.keys():
-        if city == "ld":
-            if stations[city][station]["predict"] == False:
-                continue
-        station_group[station] = pd.concat([data_post[station][:one_day_before_start_day], data_current[station]],
-                                           axis=0).sort_index()  # data_history[station],
-        print (data_post[station][:one_day_before_start_day])
-        print (station_group[station].values.shape, one_day_before_start_day)
-        # print station_group[station]
-    if city == 'bj':
-        attr_need = ["PM25_Concentration", "PM10_Concentration", "O3_Concentration", 'time_year',
-                     'time_month', 'time_day', 'time_week', 'time_hour']
-    else:
-        attr_need = ["PM25_Concentration", "PM10_Concentration", 'time_year', 'time_month',
-                     'time_day', 'time_week', 'time_hour']
-    between_two_point(station_group, attr_need)
-    pre_train(station_group, city, stations, attr_need, length=24 * 3, day=three_day_before_start_day)
-    ans_post_1 = {}
-    for station, group in station_group.items():
-        ans_post_1[station] = group[:one_day_before_end_day]
-    f1 = open(base_path_3 + city + '_data_post.pkl', 'wb')
-    pickle.dump(ans_post_1, f1, True)
-    return station_group
-
-
-# 获取所有的数据进行预测
+# 获取所有的数据进行预测                         2022-03-03 2022-03-11
 def get_all_processing_data(city,pos_station, start_day, end_day, down_load=False):
     stations = load_station()
     import pickle
@@ -824,15 +687,15 @@ def get_all_processing_data(city,pos_station, start_day, end_day, down_load=Fals
     three_day_before_start_day = datetime_toString(string_toDatetime(start_day) - timedelta(days=3))
     one_day_before_end_day = datetime_toString(string_toDatetime(end_day) - timedelta(days=1))
     # one_day_before_start_day = datetime_toString(string_toDatetime(start_day)-timedelta(days=1))
-    if down_load:
+    if down_load: #
         get_data(start_time=start_time, end_time=end_time, city=city, current_day=True)
     df = load_data(city=city, start_time=start_time, end_time=end_time, pos_station=pos_station, current_day=True)
-    filename = base_path_2 + city + "_current_day_processing.csv"
+    filename = base_path_2 + city+"_"+pos_station + "_current_day_processing.csv"
     start_time_1 = start_day + " 00:00:00"
     end_time_1 = datetime_toString(string_toDatetime(end_day) + timedelta(days=2)) + " 23:00:00"
     write_to_process(df, start_time=start_time_1, end_time=end_time_1, filename=filename)
 
-    data_current = load_data_process(city=city, current_day=True)
+    data_current = load_data_process(city=city,pos_station=pos_station, current_day=True)
     current_group = data_current.groupby("station_id")
     data_current = {}
     for station, group in current_group:
@@ -873,7 +736,7 @@ def get_all_processing_data(city,pos_station, start_day, end_day, down_load=Fals
             ans_post_1[station] = group[:one_day_before_end_day].drop_duplicates()
         else:
             ans_post_1[station] = group[:max_post_day].drop_duplicates()
-    f1 = open(base_path_3 + city + '_data_post.pkl', 'wb')
+    f1 = open(base_path_3 + city+"_"+pos_station + '_data_post.pkl', 'wb')
     pickle.dump(ans_post_1, f1, True)
     ans_post_2 = {}
     for station, group in station_group.items():
@@ -998,7 +861,7 @@ def write_to_process(df, start_time="2017-01-01 00:00:00", end_time="2018-04-10 
 #DONE has parameter pos_station to separate the stations
 def pre_precessing(city='Aalborg', pos_station = "Gade"):
     # 处理4月10号之前的数据
-    start_day = "2021-01-14"
+    start_day = "2020-01-14"
     start_time = start_day + "-0" #2017-01-01-0
     end_day = "2022-01-14"
     end_time = end_day + "-0" #2018-04-10-23
@@ -1042,7 +905,7 @@ if __name__ == '__main__':
     '''
     #pre_precessing(city='bj')
     #pre_precessing(city="Aalborg",pos_station="Tag")
-    # pre_precessing(city="Aalborg",pos_station="Gade")
+    #pre_precessing(city="Aalborg",pos_station="Gade")
     #pre_precessing(city='ld')
 
     '''
@@ -1054,11 +917,11 @@ if __name__ == '__main__':
     # loss_data_process_main(pos_station="Tag",pre_train_flag=True)
     # pre_main(city="Aalborg",pos_station="Gade")
     # pre_main(city="Aalborg",pos_station="Tag")
-    #pre_main(city="bj")
+    # #pre_main(city="bj")
     #pre_main(city='ld')
     #ld training needs to be done
-    #loss_data_process_main(pos_station="Gade",pre_train_flag=False)
-    #loss_data_process_main(pos_station="Tag",pre_train_flag=False)
+    # loss_data_process_main(pos_station="Gade",pre_train_flag=False)
+    # loss_data_process_main(pos_station="Tag",pre_train_flag=False)
 
     '''
     获取全部的数据

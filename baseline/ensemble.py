@@ -429,30 +429,30 @@ def get_ans(end_day="2018-05-08", caiyun=False):
     #     file15 = base_path_3 + end_day + "_ensemble_all_zhoujie_caiyun.csv"
     # ensemble(file13, file14, file15, a=0.4)
 
-    if caiyun == False:
-        file1 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "1" + "_" + "0301-0531_0801-0410" + "_" + str(
-            False) + ".csv"
-        file2 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "2" + "_" + "0301-0531_0801-0410" + "_" + str(
-            False) + ".csv"
-        file3 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "1" + "_" + "2017_0101-2018_0410_less" + "_" + str(
-            False) + ".csv"
-        file4 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "2" + "_" + "2017_0101-2018_0410_less" + "_" + str(
-            False) + ".csv"
-        file5 = base_path_3 + end_day + "lightgbm_mean_ensemble.csv"
-        file6 = base_path_3 + end_day + "lightgbm_median_ensemble.csv"
-    else:
-        file1 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "1" + "_" + "0301-0531_0801-0410" + "_" + str(
-            False) + "_caiyun.csv"
-        file2 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "2" + "_" + "0301-0531_0801-0410" + "_" + str(
-            False) + "_caiyun.csv"
-        file3 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "1" + "_" + "2017_0101-2018_0410_less" + "_" + str(
-            False) + "_caiyun.csv"
-        file4 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "2" + "_" + "2017_0101-2018_0410_less" + "_" + str(
-            False) + "_caiyun.csv"
-        file5 = base_path_3 + end_day + "lightgbm_mean_ensemble_caiyun.csv"
-        file6 = base_path_3 + end_day + "lightgbm_median_ensemble_caiyun.csv"
+    #if caiyun == False:
+        #file1 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "1" + "_" + "0301-0531_0801-0410" + "_" + str(
+        #    False) + ".csv"
+        #file2 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "2" + "_" + "0301-0531_0801-0410" + "_" + str(
+        #    False) + ".csv"
+        #file3 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "1" + "_" + "2017_0101-2018_0410_less" + "_" + str(
+        #    False) + ".csv"
+        #file4 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "2" + "_" + "2017_0101-2018_0410_less" + "_" + str(
+        #    False) + ".csv"
+        #file5 = base_path_3 + end_day + "lightgbm_mean_ensemble.csv"
+        #file6 = base_path_3 + end_day + "lightgbm_median_ensemble.csv"
+    # else:
+    #     file1 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "1" + "_" + "0301-0531_0801-0410" + "_" + str(
+    #         False) + "_caiyun.csv"
+    #     file2 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "2" + "_" + "0301-0531_0801-0410" + "_" + str(
+    #         False) + "_caiyun.csv"
+    #     file3 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "1" + "_" + "2017_0101-2018_0410_less" + "_" + str(
+    #         False) + "_caiyun.csv"
+    #     file4 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "2" + "_" + "2017_0101-2018_0410_less" + "_" + str(
+    #         False) + "_caiyun.csv"
+    #     file5 = base_path_3 + end_day + "lightgbm_mean_ensemble_caiyun.csv"
+    #     file6 = base_path_3 + end_day + "lightgbm_median_ensemble_caiyun.csv"
 
-    ensemble_median(file1, file2, file3, file4, file5, file6)
+    # ensemble_median(file1, file2, file3, file4, file5, file6)
 
     if caiyun == False:
         file1 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "1" + "_" + "0301-0531_0801-0410" + "_" + str(
@@ -1258,6 +1258,7 @@ if __name__ == '__main__':
     # ensemble_medians_with_weight([file1, file2], [0.1, 0.9], file3)
     day = "27"
     base_path_4 = './image/results/201805' + day + '/'
+    #TODO file1 should be writen before this
     file1 = base_path_4 + "2018-05-" + day + "lightgbm_ensemble_mean_4.csv"
     file2 = base_path_4 + "piu_091_lightgbm_weather_params_5_2017_0101-2018_0515_less_False_009.csv"
     file3 = base_path_4 + "2018-05-" + day + "test.csv"

@@ -1,2 +1,2 @@
 city=Aalborg;pos_station=Tag;attr=O3
-best_params{'lr': 0.005, 'depth': 10, 'tree': 1437, 'leaf': 400, 'sample': 0.9, 'seed': 3}
+best_params{'lr': 0.005, 'depth': 10, 'tree': 729, 'leaf': 400, 'sample': 0.9, 'seed': 3}
