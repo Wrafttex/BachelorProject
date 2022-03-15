@@ -478,6 +478,7 @@ def get_ans(end_day="2018-05-08", caiyun=False):
         file6 = base_path_3 + end_day + "lightgbm_median_ensemble_0429_caiyun.csv"
 
     ensemble_median(file1, file2, file3, file4, file5, file6)
+    time.sleep(1000000)
 
     if caiyun == False:
         file1 = base_path_3 + "" + end_day + "-lightgbm_weather_params_" + "1" + "_" + "0301-0531_0801-0410" + "_" + str(
@@ -950,7 +951,7 @@ def ensemble_medians_with_weight(filenames, weight, fileto1):
 
 
 def ensemble_median(filename1, filename2, filename3, filename4, fileto1, fileto2):
-    data_base = "../output/"
+    data_base = "./output/"
     df1 = pd.read_csv(filename1)
     df2 = pd.read_csv(filename2)
     df3 = pd.read_csv(filename3)

@@ -140,23 +140,6 @@ def load_data(city, start_time, end_time,pos_station, current_day=False):
         df['time'] = pd.to_datetime(df['time'], format='%d-%m-%Y %H:%M:%S')
         df = df.sort_values(by="time")
         #print(df)
-    # print df.size
-
-        #if city == 'ld': #TODO change these if state so they're not hardcoded to one area
-        #    filename = base_path_1 + 'London_historical_aqi_forecast_stations_20180331.csv' #LD: ,MeasurementDateGMT,station_id,PM2.5 (ug/m3),PM10 (ug/m3),NO2 (ug/m3)
-        #    df1 = pd.read_csv(filename, sep=',')                                            #AALBORG gade: Recorded;CO;NO2;SO2;NOx;PM_2.5_Lvs
-                                                                                            #AALBORG Tag: Recorded;NO2;NOx;O3;PM_2.5_Lvs
-
-       
-        #DONE made if statement ofr aalborg with it taking both csv file and concat together
-        
-            #print(df1)
-            #df['time'] = pd.to_datetime(df['time'], format='%d-%m-%Y %H:%M:%S')
-            
-    # print df.size
-    #print("\n")
-    #print(df)
-    #print(df)
     df['time'] = pd.to_datetime(df['time'])
     df.index = df['time']
     df['time_week'] = df.index.map(lambda x: x.weekday)
@@ -166,21 +149,14 @@ def load_data(city, start_time, end_time,pos_station, current_day=False):
     df['time_hour'] = df.index.map(lambda x: x.hour)
     #print
     #print(df)
-    if city == "Aalborg" and pos_station == "Gade" and current_day == True:
-        df = df[["station_id", "NO2_Concentration", "NOx_Concentration",
-                 'SO2_Concentration',"CO_Concentration",
-                 'time_year', 'time_month', 'time_week', 'time_day', 'time_hour']]
-    elif city == "Aalborg" and pos_station == "Tag" and current_day == True:
-        df = df[["station_id", "NO2_Concentration",
-                 "NOx_Concentration","O3_Concentration",
-                 'time_year', 'time_month', 'time_week', 'time_day', 'time_hour']]
-    elif city == "Aalborg" and pos_station == "Gade":
+
+    if city == "Aalborg" and pos_station == "Gade":
         df = df[["station_id", "NO2_Concentration", "NOx_Concentration",
                  'SO2_Concentration',"CO_Concentration",
                  'time_year', 'time_month', 'time_week', 'time_day', 'time_hour']]
     elif city == "Aalborg" and pos_station == "Tag":
-        df = df[["station_id", "NO2_Concentration",
-                 "NOx_Concentration","O3_Concentration",
+        df = df[["station_id", "NO2_Concentration", "NOx_Concentration",
+                 "O3_Concentration",
                  'time_year', 'time_month', 'time_week', 'time_day', 'time_hour']]
         
     # print df
@@ -231,7 +207,7 @@ def KNN(station_group, attr, k=6):
         neighborhood_k[station1] = [x[0] for x in dist[:k] if x[1] / tmp[station1].mean() < 0.20]
     return neighborhood_k
 
-
+#There are only 1, 2, or 3 missing values
 # 缺失值只有1,2,或者3个
 def between_two_point(station_group, attr_need):
     num = 0
@@ -245,14 +221,14 @@ def between_two_point(station_group, attr_need):
                 #print(j)
                 #print(values1[i,j])
                 if np.isnan(values1[i, j]):
-                    if not np.isnan(values1[i - 1, j]) and not np.isnan(values1[i + 1, j]):
-                        values1[i, j] = (values1[i - 1, j] + values1[i + 1, j]) / 2
+                    if not np.isnan(values1[i - 1, j]) and not np.isnan(values1[i + 1, j]): #one entry before and one after
+                        values1[i, j] = (values1[i - 1, j] + values1[i + 1, j]) / 2 #takes the average of those 2 value
                         num += 1
                         continue
                     if i < 2:
                         continue
-                    if not np.isnan(values1[i - 2, j]) and not np.isnan(values1[i + 1, j]):
-                        values1[i, j] = (values1[i - 2, j] + values1[i + 1, j] * 2) / 3
+                    if not np.isnan(values1[i - 2, j]) and not np.isnan(values1[i + 1, j]): #two before and one after
+                        values1[i, j] = (values1[i - 2, j] + values1[i + 1, j] * 2) / 3 #average
                         values1[i - 1, j] = (values1[i - 2, j] * 2 + values1[i + 1, j]) / 3
                         num += 2
                         continue
@@ -275,7 +251,7 @@ def between_two_point(station_group, attr_need):
         # print "group.values.shape: ", group.values.shape
     print ("num: ", num)
 
-
+#Fill missing values with a pretrained model
 # 利用预训练的模型 填补缺失值
 #TODO need to change to be able to open our air quality model
 def pre_train(station_group, city, pos_station, stations, attr_need, length, day=None):
@@ -387,19 +363,12 @@ def pre_train(station_group, city, pos_station, stations, attr_need, length, day
 #TODO in if statement check what the differes is between them, depending on it, might need to change it
 def pre_train_data(station_group, stations, city, pos_station, attr_need, length):
     ans = []
-    print(pos_station)
+    #print(pos_station)
     for station, group in station_group.items():
         values1 = group[attr_need].values
-        #print(values1)
-        #print(stations[city][station])
         # print "length: ", length
         # print "values1.shape", values1.shape
         for i in range(0, values1.shape[0] - length):
-            #print(i)
-            #print("pre_train_data ",i)
-            #print(stations[city][station]["type_id"], stations[city][station]["station_num_id"])
-            #print("\n\n\n\n\n--------------------------------------------")
-            #print(stations[city])
             tmp = [stations[city][station]["type_id"], stations[city][station]["station_num_id"]]
             tmp += list(values1[i + length, -2:])
             #print(values1[i + length, -2:])
@@ -528,14 +497,6 @@ def four_days(df, station_group, city, attr_need):
         group["2017-01-01":"2017-01-04"].loc[:, attr_need] = values1
 
 
-# 统计大量nan的天
-def nan_data_static(station_group, city):
-    for station, group in station_group.items():
-        if city == "bj":
-            value1 = group[["PM25_Concentration", "PM10_Concentration", "O3_Concentration"]].values
-
-    pass
-    # for
 
 
 # 处理丢失数据
@@ -555,7 +516,7 @@ def process_loss_data(df, city, pos_station, stations, length=24 * 3, pre_train_
         attr_need = ["NO2_Concentration","O3_Concentration", "NOx_Concentration", 'time_year',
                      'time_month', 'time_day', 'time_week', 'time_hour']  
     #print("station___:",station_group)
-    between_two_point(station_group, attr_need)
+    between_two_point(station_group, attr_need)#we have more than 3 missing data point at the same time
     # neighborhood_k = KNN(station_group, attr="PM10_Concentration")
     # print neighborhood_k
     # for station in neighborhood_k.keys():
@@ -821,8 +782,9 @@ filename = base_path_2 + city + "_current_day_processing.csv"
 
 #TODO check why they both of time and splitting of time, might be it should be the same as line 160
 #TODO change parameter to fit our time and cities as standard
-def write_to_process(df, start_time="2017-01-01 00:00:00", end_time="2018-04-10 23:00:00",
-                     filename=base_path_2 + "bj_airquality_processing.csv"):
+def write_to_process(df, start_time="2020-01-14 00:00:00", end_time="2022-01-14 23:00:00",
+                     filename=base_path_2 + "Aalborg_Gade_airquality_processing.csv"):
+    
     df = df.drop_duplicates(["station_id", 'time_year', "time_month", "time_day", "time_hour"])
     start_day = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
     end_day = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
@@ -903,23 +865,18 @@ if __name__ == '__main__':
     '''
     预处理，去除重复的项，同时将不连续的时间修正
     '''
-    #pre_precessing(city='bj')
     #pre_precessing(city="Aalborg",pos_station="Tag")
     #pre_precessing(city="Aalborg",pos_station="Gade")
-    #pre_precessing(city='ld')
 
     '''
     缺失数据处理
     训练模型 前三天预测后一个值
     利用模型预测对缺失数据进行填充
     '''
-    # loss_data_process_main(pos_station="Gade",pre_train_flag=True)
+    loss_data_process_main(pos_station="Gade",pre_train_flag=True)
     # loss_data_process_main(pos_station="Tag",pre_train_flag=True)
     # pre_main(city="Aalborg",pos_station="Gade")
     # pre_main(city="Aalborg",pos_station="Tag")
-    # #pre_main(city="bj")
-    #pre_main(city='ld')
-    #ld training needs to be done
     # loss_data_process_main(pos_station="Gade",pre_train_flag=False)
     # loss_data_process_main(pos_station="Tag",pre_train_flag=False)
 
@@ -927,8 +884,8 @@ if __name__ == '__main__':
     获取全部的数据
     利用前三预测后一个值来提交结果，迭代预测
     '''
-    post_data(city="Aalborg",pos_station="Gade")
-    post_data(city="Aalborg",pos_station="Tag")
+    # post_data(city="Aalborg",pos_station="Gade")
+    # post_data(city="Aalborg",pos_station="Tag")
     # post_data(city="bj")
     #     model_1(city='bj')
     # post_data(city="ld")
@@ -946,9 +903,9 @@ if __name__ == '__main__':
     # for station, group in df.groupby("station_id"):
     #     print station, group.values.shape
     # # print df.values.shape
-    #
+    
     # city = 'ld'
     # df = load_data_process(city=city)
     # for station, group in df.groupby("station_id"):
     #     print station, group.values.shape
-    # # print df.values.shape
+    # print df.values.shape

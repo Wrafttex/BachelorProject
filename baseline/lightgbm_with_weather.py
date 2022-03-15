@@ -66,15 +66,15 @@ def get_train_test_data(city,pos_station, length=24 * (3 * 7 + 2)):
     num = 0
     ans = []
     for station, group in ans_history.items():
-        print("\n\n\n")
-        print("for loop")
+        #print("\n\n\n")
+        #print("for loop")
         
-        print(station,group)
+        #print(station,group)
         #grid_station = nearst[city][station]
         #weather_data = weather_groups.get_group(grid_station).sort_index()
         station_num_id = stations[city][station]["station_num_id"]
         station_type_id = stations[city][station]["type_id"]
-        print(ans_current)
+        #print(ans_current)
         if station in ans_current:
             group = pd.concat([ans_history[station], ans_current[station]["2022-01-15":"2022-02-02"]],
                               axis=0).sort_index()
@@ -84,13 +84,13 @@ def get_train_test_data(city,pos_station, length=24 * (3 * 7 + 2)):
         group = group.drop_duplicates()
         values = group[attr_need].values
         #weather_values = weather_data[weather_attr_need].values
-        print (values.shape)
+        #print (values.shape)
         values = np.hstack([values])
         for i in range(0, values.shape[0] - length + 1, 24):
             tmp = [station_num_id, station_type_id]
             
             if pos_station == "Gade":
-                tmp += list(values[i + length - 24, 4: 7]) #3-7 time
+                tmp += list(values[i + length - 24, 4: 8]) #3-7 time
                 values2 = values[i: i + length - 48, :4] # to time
                 values2 = list(values2.T.flatten())
                 tmp += values2
@@ -131,7 +131,7 @@ def get_train_test_data(city,pos_station, length=24 * (3 * 7 + 2)):
         for i in range(0, values.shape[0] - length + 1, 24):
             tmp = [station_num_id, station_type_id]
             if pos_station == "Gade":
-                tmp += list(values[i + length - 24, 4: 7]) #3-7 time
+                tmp += list(values[i + length - 24, 4: 8]) #3-7 time
                 values2 = values[i: i + length - 48, :4] # to time
                 values2 = list(values2.T.flatten())
                 tmp += values2
@@ -624,112 +624,6 @@ def cal_best_params(city, attr,pos_station, type="0301-0531_0801-0410", load_fro
     model_param['tree'] = cv_results.best_iteration
     print (cv_results.best_iteration)
     best_params = {}
-    # print("调参1：提高准确率")
-    # min_merror = float('Inf')
-    # for num_leaves in range(20, 450, 100):
-    #     for max_depth in range(5, 16, 5):
-    #         params['num_leaves'] = num_leaves
-    #         params['max_depth'] = max_depth
-    #         cv_results = lgb.cv(
-    #             params,
-    #             lgb_train,
-    #             seed=42,
-    #             nfold=5,
-    #             early_stopping_rounds=10,
-    #             verbose_eval=True
-    #         )
-    #         mean_merror = pd.Series(cv_results['l2-mean']).min()
-    #         if mean_merror < min_merror:
-    #             min_merror = mean_merror
-    #             best_params['num_leaves'] = num_leaves
-    #             best_params['max_depth'] = max_depth
-    # params['num_leaves'] = best_params['num_leaves']
-    # params['max_depth'] = best_params['max_depth']
-    # # 过拟合
-    # print("调参2：降低过拟合")
-    # for max_bin in range(1, 155, 25):
-    #     for min_data_in_leaf in range(10, 101, 10):
-    #         params['max_bin'] = max_bin
-    #         params['min_data_in_leaf'] = min_data_in_leaf
-    #
-    #         cv_results = lgb.cv(
-    #             params,
-    #             lgb_train,
-    #             seed=42,
-    #             nfold=3,
-    #             early_stopping_rounds=3,
-    #             # verbose_eval=True
-    #         )
-    #
-    #         mean_merror = pd.Series(cv_results['l2-mean']).min()
-    #
-    #         if mean_merror < min_merror:
-    #             min_merror = mean_merror
-    #             best_params['max_bin'] = max_bin
-    #             best_params['min_data_in_leaf'] = min_data_in_leaf
-    #
-    # params['min_data_in_leaf'] = best_params['min_data_in_leaf']
-    # params['max_bin'] = best_params['max_bin']
-    # print params
-    # print("调参3：降低过拟合")
-    # for feature_fraction in [i / 10.0 for i in range(0, 11, 2)]:
-    #     for bagging_fraction in [i / 10.0 for i in range(0, 11, 2)]:
-    #         for bagging_freq in range(0, 50, 5):
-    #             params['feature_fraction'] = feature_fraction
-    #             params['bagging_fraction'] = bagging_fraction
-    #             params['bagging_freq'] = bagging_freq
-    #
-    #             cv_results = lgb.cv(
-    #                 params,
-    #                 lgb_train,
-    #                 seed=42,
-    #                 nfold=3,
-    #                 early_stopping_rounds=3,
-    #                 # verbose_eval=True
-    #             )
-    #
-    #             mean_merror = pd.Series(cv_results['l2-mean']).min()
-    #             boost_rounds = pd.Series(cv_results['l2-mean']).argmin()
-    #
-    #             if mean_merror < min_merror:
-    #                 min_merror = mean_merror
-    #                 best_params['feature_fraction'] = feature_fraction
-    #                 best_params['bagging_fraction'] = bagging_fraction
-    #                 best_params['bagging_freq'] = bagging_freq
-    #
-    # params['feature_fraction'] = best_params['feature_fraction']
-    # params['bagging_fraction'] = best_params['bagging_fraction']
-    # params['bagging_freq'] = best_params['bagging_freq']
-    # print params
-    # print("调参4：降低过拟合")
-    # for lambda_l1 in [i / 10.0 for i in range(0, 11, 2)]:
-    #     for lambda_l2 in [i / 10.0 for i in range(0, 11, 2)]:
-    #         for min_split_gain in [i / 10.0 for i in range(0, 11, 2)]:
-    #             params['lambda_l1'] = lambda_l1
-    #             params['lambda_l2'] = lambda_l2
-    #             params['min_split_gain'] = min_split_gain
-    #
-    #             cv_results = lgb.cv(
-    #                 params,
-    #                 lgb_train,
-    #                 seed=42,
-    #                 nfold=3,
-    #                 early_stopping_rounds=3,
-    #                 # verbose_eval=True
-    #             )
-    #
-    #             mean_merror = pd.Series(cv_results['l2-mean']).min()
-    #
-    #             if mean_merror < min_merror:
-    #                 min_merror = mean_merror
-    #                 best_params['lambda_l1'] = lambda_l1
-    #                 best_params['lambda_l2'] = lambda_l2
-    #                 best_params['min_split_gain'] = min_split_gain
-    #
-    # params['lambda_l1'] = best_params['lambda_l1']
-    # params['lambda_l2'] = best_params['lambda_l2']
-    # params['min_split_gain'] = best_params['min_split_gain']
-
     print(model_param)
     return model_param
 
@@ -768,9 +662,13 @@ def train(city, attr,pos_station="Gade", best_params1="1", type="0301-0531_0801-
     test_Y1 = gbm.predict(test_X)
     score = get_score(test_Y1, test_Y)
     model_file = base_path_2 + city +"_"+pos_station+ '_' + attr + '_best_lightgbm_with_weather_params_' + best_params1 + '_' + type + '_1.model'
-    # gbm.save_model(model_file)
-    with open(model_file, 'wb') as fout:
+    model_filegbm = base_path_2 + city +"_"+pos_station+ '_' + attr + '_best_lightgbm_with_weather_params_' + best_params1 + '_' + type + 'gbm_1.model'
+    nongbm = gbm
+    gbm.save_model(model_file)
+    with open(model_filegbm, 'wb') as fout:
         pickle.dump(gbm, fout)
+    with open(model_file, 'wb') as nonfout:
+        pickle.dump(nongbm, nonfout)
     return score
 
 
@@ -933,7 +831,7 @@ def get_ans(type_, feature_first=False, start_day="2018-04-27", end_day="2018-04
     ans = "test_id,PM2.5,PM10,O3\n"
     if caiyun == False:
         ans_file = base_path_3 + end_day + "-lightgbm_weather_params_" + best_params + "_" + type_ + "_" + str(
-            feature_first) + "" + ".csv"
+            feature_first) + "" + "_caiyun.csv"
     else:
         ans_file = base_path_3 + end_day + "-lightgbm_weather_params_" + best_params + "_" + type_ + "_" + str(
             feature_first) + "_caiyun.csv"
@@ -964,20 +862,18 @@ def get_test(type, feature_first=False, best_params="1", caiyun=False):
 
 
 def lightgbm_run(day1, day2, caiyun=False):
-    # get_ans(type_="0301-0531_0801-0410", feature_first=True, start_day=day1, end_day=day2)
+    get_ans(type_="0301-0531_0801-0410", feature_first=False, start_day=day1, end_day=day2)
     get_ans(type_="2017_0101-2018_0429_less", feature_first=False, start_day=day1, end_day=day2, best_params="1",
             caiyun=caiyun)
-    # get_ans(type_="2017_0101-2018_0410_less", feature_first=False, start_day=day1, end_day=day2, best_params="1",
+    #get_ans(type_="2017_0101-2018_0410_less", feature_first=False, start_day=day1, end_day=day2, best_params="1",
     #         caiyun=caiyun)
-    # get_ans(type_="2017_0101-2018_0429_less", feature_first=False, start_day=day1, end_day=day2, best_params="1",
+    get_ans(type_="0301-0531_0801-0410", feature_first=False, start_day=day1, end_day=day2, best_params="2",
+            caiyun=caiyun)
+    #get_ans(type_="2017_0101-2018_0410_less", feature_first=False, start_day=day1, end_day=day2, best_params="2",
     #         caiyun=caiyun)
-    # get_ans(type_="0301-0531_0801-0410", feature_first=False, start_day=day1, end_day=day2, best_params="2",
-    #         caiyun=caiyun)
-    # get_ans(type_="2017_0101-2018_0410_less", feature_first=False, start_day=day1, end_day=day2, best_params="2",
-    #         caiyun=caiyun)
-    # get_ans(type_="2017_0101-2018_0429_less", feature_first=False, start_day=day1, end_day=day2, best_params="2",
-    #         caiyun=caiyun)
-    # get_ans(type_="0301-0531_0801-0410", feature_first=False, start_day=day1, end_day=day2, best_params="3",
+    get_ans(type_="2017_0101-2018_0429_less", feature_first=False, start_day=day1, end_day=day2, best_params="2",
+            caiyun=caiyun)
+    #get_ans(type_="0301-0531_0801-0410", feature_first=False, start_day=day1, end_day=day2, best_params="3",
     #         caiyun=caiyun)
     # get_ans(type_="2017_0101-2018_0410_less", feature_first=False, start_day=day1, end_day=day2, best_params="3",
     #         caiyun=caiyun)
@@ -999,78 +895,101 @@ def lightgbm_run(day1, day2, caiyun=False):
 
 if __name__ == '__main__':
     city = "Aalborg"
-    #get_train_test_data(city=city,pos_station="Gade")
-    #get_train_test_data(city=city,pos_station="Tag")
+    get_train_test_data(city=city,pos_station="Gade")
+    get_train_test_data(city=city,pos_station="Tag")
     attrs = ["NO2","NOx","SO2","CO","O3",]
     pos_stations = ["Gade","Tag"]
-    for pos_station in pos_stations:
-        for attr in attrs:
-            if pos_station == "Gade" and attr == 'O3':
-                continue
-            elif pos_station == "Tag" and attr == "SO2":
-                continue
-            elif pos_station == "Tag" and attr == "CO":
-                continue            
+    # for pos_station in pos_stations:
+    #     for attr in attrs:
+    #         if pos_station == "Gade" and attr == 'O3':
+    #             continue
+    #         elif pos_station == "Tag" and attr == "SO2":
+    #             continue
+    #         elif pos_station == "Tag" and attr == "CO":
+    #             continue            
             
-            best_params = cal_best_params(city, attr,pos_station, type="2017_0101-2018_0410_less", load_from_feature_file=False)
-            print (city, attr, best_params)
-            params_file = open("./lightgbmparam/lightgbm_best_params_"+pos_station+"_"+attr+ ".txt", 'w+')
-            params_file.write("city=" + city + ";pos_station="+pos_station + ";attr=" + attr + "\nbest_params" + str(best_params) + "\n")
-            params_file.close()
+    #         best_params = cal_best_params(city, attr,pos_station, type="2017_0101-2018_0410_less", load_from_feature_file=False)
+    #         print (city, attr, best_params)
+    #         params_file = open("./lightgbmparam/lightgbm_best_params_"+pos_station+"_"+attr+"_"+"2017_0101-2018_0410_less"+ ".txt", 'w+')
+    #         params_file.write("city=" + city + ";pos_station="+pos_station + ";attr=" + attr + "\nbest_params" + str(best_params) + "\n")
+    #         params_file.close()
    
     type = "2017_0101-2018_0429_less"
-    for pos_station in pos_stations:
-        for attr in attrs:
-            if pos_station == "Gade" and attr == 'O3':
-                continue
-            elif pos_station == "Tag" and attr == "SO2":
-                continue
-            elif pos_station == "Tag" and attr == "CO":
-                continue
-            score = train(city=city,pos_station=pos_station, attr=attr, best_params1="1", type=type,
-                          load_from_feature_file=False)
-            print (score)
-    for city in cities:
-        for attr in attrs:
-            if city == "ld" and attr == 'O3':
-                continue
-            print (score)
-            score = train(city=city, attr=attr, best_params1="2", type=type,
-                          load_from_feature_file=False)
-            print (score)
+    # for pos_station in pos_stations:
+    #     for attr in attrs:
+    #         if pos_station == "Gade" and attr == 'O3':
+    #             continue
+    #         elif pos_station == "Tag" and attr == "SO2":
+    #             continue
+    #         elif pos_station == "Tag" and attr == "CO":
+    #             continue
+    #         score = train(city=city,pos_station=pos_station, attr=attr, best_params1="1", type=type,
+    #                       load_from_feature_file=False)
+    #         print (score)
+    # for pos_station in pos_stations:
+    #     for attr in attrs:
+    #         if pos_station == "Gade" and attr == 'O3':
+    #             continue
+    #         elif pos_station == "Tag" and attr == "SO2":
+    #             continue
+    #         elif pos_station == "Tag" and attr == "CO":
+    #             continue
+    #         score = train(city=city,pos_station=pos_station, attr=attr, best_params1="2", type=type,
+    #                       load_from_feature_file=False)
+    #         print (score)
 
-    type = "0301-0531_0801-0410"
-    for city in cities:
-        for attr in attrs:
-            if city == "ld" and attr == 'O3':
-                continue
-            score = train(city=city, attr=attr, best_params1="4", type=type,
-                          load_from_feature_file=False)
-            print (score)
-    type = "2017_0101-2018_0429_less"
-    for city in cities:
-        for attr in attrs:
-            if city == "ld" and attr == 'O3':
-                continue
-            score = train(city=city, attr=attr, best_params1="3", type=type,
-                          load_from_feature_file=False)
-            print (score)
-    nround = {
-        "bj": {
-            'PM25': 800,
-            'PM10': 400,
-            'O3': 650
-        },
-        'ld': {
-            "PM25": 1000,
-            "PM10": 1000
-        }
-    }
-    time_now = datetime.now()
-    time_now = time_now - timedelta(hours=24)
-    start_day = (time_now - timedelta(days=2)).strftime('%Y-%m-%d')
-    end_day = time_now.strftime('%Y-%m-%d')
-    xgboost_run(day1=start_day, day2=end_day)
+    # type = "0301-0531_0801-0410"
+    # for pos_station in pos_stations:
+    #     for attr in attrs:
+    #         if pos_station == "Gade" and attr == 'O3':
+    #             continue
+    #         elif pos_station == "Tag" and attr == "SO2":
+    #             continue
+    #         elif pos_station == "Tag" and attr == "CO":
+    #             continue
+    #         score = train(city=city,pos_station=pos_station, attr=attr, best_params1="1", type=type,
+    #                       load_from_feature_file=False)
+    #         print (score)
+    # type = "0301-0531_0801-0410"
+    # for pos_station in pos_stations:
+    #     for attr in attrs:
+    #         if pos_station == "Gade" and attr == 'O3':
+    #             continue
+    #         elif pos_station == "Tag" and attr == "SO2":
+    #             continue
+    #         elif pos_station == "Tag" and attr == "CO":
+    #             continue
+    #         score = train(city=city,pos_station=pos_station, attr=attr, best_params1="2", type=type,
+    #                       load_from_feature_file=False)
+    #         print (score)
+    # type = "2017_0101-2018_0429_less"
+    # for pos_station in pos_stations:
+    #     for attr in attrs:
+    #         if pos_station == "Gade" and attr == 'O3':
+    #             continue
+    #         elif pos_station == "Tag" and attr == "SO2":
+    #             continue
+    #         elif pos_station == "Tag" and attr == "CO":
+    #             continue
+    #         score = train(city=city, attr=attr, best_params1="3", type=type,
+    #                       load_from_feature_file=False)
+    #         print (score)
+    # nround = {
+    #     "bj": {
+    #         'PM25': 800,
+    #         'PM10': 400,
+    #         'O3': 650
+    #     },
+    #     'ld': {
+    #         "PM25": 1000,
+    #         "PM10": 1000
+    #     }
+    # }
+    # time_now = datetime.now()
+    # time_now = time_now - timedelta(hours=24)
+    # start_day = (time_now - timedelta(days=2)).strftime('%Y-%m-%d')
+    # end_day = time_now.strftime('%Y-%m-%d')
+    # xgboost_run(day1=start_day, day2=end_day)
     # get_ans(type_="0301-0531_0801-0410", feature_first=True, start_day=start_day, end_day=end_day)
     # get_ans(type_="0301-0531_0801-0410", feature_first=False, start_day=start_day, end_day=end_day)
     # get_ans(type_="2017_0101-2018_0410_less", feature_first=False, start_day=start_day, end_day=end_day, nround=nround)

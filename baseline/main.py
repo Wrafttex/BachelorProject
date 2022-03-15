@@ -27,7 +27,7 @@ from lightgbm_with_weather import lightgbm_run
 #     get_ans_latter(end_day=end_day, caiyun=True)
 
 def run(start_day, end_day):
-    lightgbm_run(day1=start_day, day2=end_day, caiyun=True)
+    #lightgbm_run(day1=start_day, day2=end_day, caiyun=True)
     get_ans(end_day=end_day, caiyun=True)
     lightgbm_run(day1=start_day, day2=end_day, caiyun=False)
     get_ans(end_day=end_day, caiyun=False)
