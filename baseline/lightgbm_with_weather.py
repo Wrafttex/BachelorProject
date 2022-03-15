@@ -51,7 +51,7 @@ def get_train_test_data(city,pos_station, length=24 * (3 * 7 + 2)):
         attr_need = ["NO2_Concentration", "NOx_Concentration", "SO2_Concentration","CO_Concentration",  'time_year',
                      'time_month', 'time_day', 'time_week', 'time_hour']  
     elif pos_station =="Tag":
-        attr_need = ["NO2_Concentration","O3_Concentration", "NOx_Concentration", 'time_year',
+        attr_need = ["NO2_Concentration", "NOx_Concentration","O3_Concentration", 'time_year',
                      'time_month', 'time_day', 'time_week', 'time_hour']  
         
     stations = load_station() 
@@ -375,7 +375,7 @@ def get_all_feature(data, city,pos_station="Gade", attr="NO2", length=3 * 7 * 24
     #oonehot_encoder = OneHotEncoder()
     #onehot_feature = oonehot_encoder.fit_transform(data[:,:6])
     print(onehot_feature)
-    
+    #TODO this is not correctely creating the data 
     if attr == "NO2":
         static_feature = get_all_statistic_feature(data[:, 6: 6 + length])
         orign_data = np.hstack([data[:, 6 + 14 * 24: 6 + length], data[:, 6 + length + 18 * 24:6 + length * 2]])
@@ -689,7 +689,7 @@ def predict(city,pos_station, length=24 * (3 * 7 + 2), start_day="2018-04-11", e
         attr_need = ["NO2_Concentration", "NOx_Concentration", "SO2_Concentration","CO_Concentration",  'time_year',
                      'time_month', 'time_day', 'time_week', 'time_hour']  
     elif pos_station =="Tag":
-        attr_need = ["NO2_Concentration","O3_Concentration", "NOx_Concentration", 'time_year',
+        attr_need = ["NO2_Concentration","NOx_Concentration","O3_Concentration",  'time_year',
                      'time_month', 'time_day', 'time_week', 'time_hour']  
         
     stations = load_station()
@@ -769,12 +769,8 @@ def predict(city,pos_station, length=24 * (3 * 7 + 2), start_day="2018-04-11", e
             NO2_feature = get_all_feature_1(np.array([tmp]), city, attr="NO2")
             NOx_feature = get_all_feature_1(np.array([tmp]), city, attr="NOx")
         if nround is None:
-            #print("\n\n\n\n")
-            #print("------------")
-            #print (len(NO2_feature[0]))
-            #time.sleep(1000000000000)
-            pred_NO2 = model_NO2.predict(change_feature(NO2_feature[0]), num_iteration=model_NO2.best_iteration, predict_disable_shape_check=True)
-            pred_NOx = model_NOx.predict(change_feature(NOx_feature[0]), num_iteration=model_NOx.best_iteration, predict_disable_shape_check=True)
+            pred_NO2 = model_NO2.predict(change_feature(NO2_feature[0]), num_iteration=model_NO2.best_iteration)
+            pred_NOx = model_NOx.predict(change_feature(NOx_feature[0]), num_iteration=model_NOx.best_iteration)
         else:
             pred_NO2 = model_NO2.predict(change_feature(NO2_feature[0]), num_iteration=nround['PM25'])
             pred_NOx = model_NOx.predict(change_feature(NOx_feature[0]), num_iteration=nround['PM10'])
@@ -801,8 +797,8 @@ def predict(city,pos_station, length=24 * (3 * 7 + 2), start_day="2018-04-11", e
                 SO2_feature = get_all_feature_1(np.array([tmp]), city, attr="SO2")
                 CO_feature = get_all_feature_1(np.array([tmp]), city, attr="CO")
             if nround == None:
-                pred_SO2 = model_SO2.predict(change_feature(SO2_feature[0]), model_SO2.best_iteration, predict_disable_shape_check=True)
-                pred_CO = model_CO.predict(change_feature(CO_feature[0]), model_SO2.best_iteration, predict_disable_shape_check=True)
+                pred_SO2 = model_SO2.predict(change_feature(SO2_feature[0]), model_SO2.best_iteration)
+                pred_CO = model_CO.predict(change_feature(CO_feature[0]), model_SO2.best_iteration)
             else:
                 pred_SO2 = model_SO2.predict(change_feature(SO2_feature[0]), num_iteration=nround['SO2'])
                 pred_CO = model_CO.predict(change_feature(CO_feature[0]), num_iteration=nround['CO'])
@@ -926,42 +922,42 @@ if __name__ == '__main__':
     #         score = train(city=city,pos_station=pos_station, attr=attr, best_params1="1", type=type,
     #                       load_from_feature_file=False)
     #         print (score)
-    # for pos_station in pos_stations:
-    #     for attr in attrs:
-    #         if pos_station == "Gade" and attr == 'O3':
-    #             continue
-    #         elif pos_station == "Tag" and attr == "SO2":
-    #             continue
-    #         elif pos_station == "Tag" and attr == "CO":
-    #             continue
-    #         score = train(city=city,pos_station=pos_station, attr=attr, best_params1="2", type=type,
-    #                       load_from_feature_file=False)
-    #         print (score)
+    for pos_station in pos_stations:
+        for attr in attrs:
+            if pos_station == "Gade" and attr == 'O3':
+                continue
+            elif pos_station == "Tag" and attr == "SO2":
+                continue
+            elif pos_station == "Tag" and attr == "CO":
+                continue
+            score = train(city=city,pos_station=pos_station, attr=attr, best_params1="2", type=type,
+                          load_from_feature_file=False)
+            print (score)
 
-    # type = "0301-0531_0801-0410"
-    # for pos_station in pos_stations:
-    #     for attr in attrs:
-    #         if pos_station == "Gade" and attr == 'O3':
-    #             continue
-    #         elif pos_station == "Tag" and attr == "SO2":
-    #             continue
-    #         elif pos_station == "Tag" and attr == "CO":
-    #             continue
-    #         score = train(city=city,pos_station=pos_station, attr=attr, best_params1="1", type=type,
-    #                       load_from_feature_file=False)
-    #         print (score)
-    # type = "0301-0531_0801-0410"
-    # for pos_station in pos_stations:
-    #     for attr in attrs:
-    #         if pos_station == "Gade" and attr == 'O3':
-    #             continue
-    #         elif pos_station == "Tag" and attr == "SO2":
-    #             continue
-    #         elif pos_station == "Tag" and attr == "CO":
-    #             continue
-    #         score = train(city=city,pos_station=pos_station, attr=attr, best_params1="2", type=type,
-    #                       load_from_feature_file=False)
-    #         print (score)
+    type = "0301-0531_0801-0410"
+    for pos_station in pos_stations:
+        for attr in attrs:
+            if pos_station == "Gade" and attr == 'O3':
+                continue
+            elif pos_station == "Tag" and attr == "SO2":
+                continue
+            elif pos_station == "Tag" and attr == "CO":
+                continue
+            score = train(city=city,pos_station=pos_station, attr=attr, best_params1="1", type=type,
+                          load_from_feature_file=False)
+            print (score)
+    type = "0301-0531_0801-0410"
+    for pos_station in pos_stations:
+        for attr in attrs:
+            if pos_station == "Gade" and attr == 'O3':
+                continue
+            elif pos_station == "Tag" and attr == "SO2":
+                continue
+            elif pos_station == "Tag" and attr == "CO":
+                continue
+            score = train(city=city,pos_station=pos_station, attr=attr, best_params1="2", type=type,
+                          load_from_feature_file=False)
+            print (score)
     # type = "2017_0101-2018_0429_less"
     # for pos_station in pos_stations:
     #     for attr in attrs:

@@ -33,16 +33,16 @@ def draw_single_station_day(df, city, stations, start_day='2017-01-01', num=3):
                 plt.close()
 
 
-def draw_single_station(df, city, stations, start_day='2017-01-01'):
+def draw_single_station(df, city,pos_station, stations, start_day='2017-01-01'):
     from matplotlib.backends.backend_pdf import PdfPages
-    with PdfPages('../image/' + city + "_" + start_day + '_all.pdf') as pdf:
+    with PdfPages('./image/' + city +"_"+pos_station + "_" + start_day + '_all.pdf') as pdf:
         for station_id in stations[city].keys():
             df_ans = df[start_day:]
             df_ans = df_ans[(df_ans.station_id==station_id)]
-            if city == 'bj':
-                df_ans = df_ans[["station_id", "PM25_Concentration", "PM10_Concentration", "O3_Concentration"]]
+            if pos_station == 'Tag':
+                df_ans = df_ans[["station_id", "NO2_Concentration", "NOx_Concentration", "O3_Concentration"]]
             else:
-                df_ans = df_ans[["station_id", "PM25_Concentration", "PM10_Concentration"]]
+                df_ans = df_ans[["station_id", "NO2_Concentration", "NOx_Concentration","SO2_Concentration","CO_Concentration"]]
             if df_ans.size == 0:
 
                 continue

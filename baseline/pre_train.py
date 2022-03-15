@@ -85,21 +85,21 @@ def model_train(params, train_X, test_X, train_Y, test_Y, model_file):
 
 # 矩阵onehot
 #TODO check what this function does, to see if it needs to be change
-def onehot_mat(data, city):
+def onehot_mat(data, city,pos_station):
     ans = []
     for i in range(data.shape[0]):
-        if city == "bj":
+        if pos_station == "Tag":
             tmp = np.zeros(70)
             tmp[int(data[i, 0]) - 1] = 1
             tmp[4 + int(data[i, 1]) - 1] = 1
             tmp[39 + int(data[i, 2]) - 1] = 1
             tmp[46 + int(data[i, 3]) - 1] = 1
         else:
-            tmp = np.zeros(100) # was 60
+            tmp = np.zeros(80) # was 60
             tmp[int(data[i, 0]) - 1] = 1
-            tmp[1 + int(data[i, 1]) - 1] = 1
-            tmp[69 + int(data[i, 2]) - 1] = 1
-            tmp[76 + int(data[i, 3]) - 1] = 1
+            tmp[3 + int(data[i, 1]) - 1] = 1
+            tmp[49 + int(data[i, 2]) - 1] = 1
+            tmp[56 + int(data[i, 3]) - 1] = 1
         ans.append(tmp)
     ans = np.array(ans)
     return ans
@@ -109,70 +109,49 @@ def onehot_mat(data, city):
 #TODO attribute are hardcoded
 def run(data, attribution, city,pos_station):
     start_time = time.time()
-    if attribution == "PM25":
-        if city == "bj":
-            X = data[:, :-3]
-            Y = data[:, -3]
-        elif pos_station == "Tag":
-            X = data[:,:-6]
-            Y = data[:,-6]
-        elif pos_station == "Gade":
-            X = data[:,:-4]
-            Y = data[:,-4]
-        
-        else:
-            X = data[:, :-2]
-            Y = data[:, -2]
-        data_2 = get_static(X[:, 4: 4 + length])
-        static_day = get_static_day(X[:, 4: 4 + length])
-    elif attribution == "NO2":
+    if attribution == "NO2":
         if pos_station == "Gade":
             X = data[:,:-4]
             Y = data[:,-4]
-            data_2 = get_static(X[:, 4 + length: 4 + length*2])
-            static_day = get_static_day(X[:, 4: 4 + length])
         elif pos_station == "Tag":
             X = data[:,:-3]
             Y = data[:,-3]
-            data_2 = get_static(X[:, 4 + length: 4 + length*2])
-            static_day = get_static_day(X[:, 4: 4 + length])
-    elif attribution == "SO2":
-        if pos_station == "Gade":
-            X = data[:,:-2]
-            Y = data[:,-2]
-            data_2 = get_static(X[:, 4 + length: 4 + length*2])
-            static_day = get_static_day(X[:, 4: 4 + length])
-    elif attribution == "CO":
-        if pos_station == "Gade":
-            X = data[:,:-1]
-            Y = data[:,-1]
-            data_2 = get_static(X[:, 4 + length: 4 + length*2])
-            static_day = get_static_day(X[:, 4: 4 + length])
-    elif attribution == "O3":
-        if pos_station == "Tag":
-            X = data[:,:-1]
-            Y = data[:,-1]
-            data_2 = get_static(X[:, 4 + length: 4 + length*2])
-            static_day = get_static_day(X[:, 4: 4 + length])
+        print(X[:, 4 + length: 4 + length])
+        input("waiting")
+        data_2 = get_static(X[:, 4: 4 + length])
+        static_day = get_static_day(X[:, 4: 4 + length])
     elif attribution == "NOx":
         if pos_station == "Gade":
             X = data[:,:-3]
             Y = data[:,-3]
-            data_2 = get_static(X[:, 4 + length: 4 + length*2])
-            static_day = get_static_day(X[:, 4: 4 + length])
         elif pos_station == "Tag":
             X = data[:,:-2]
             Y = data[:,-2]
-            data_2 = get_static(X[:, 4 + length: 4 + length*2])
-            static_day = get_static_day(X[:, 4: 4 + length])
-    else:
-        print("you done goof")
-         
+        data_2 = get_static(X[:, 4 + length: 4 + length * 2])
+        static_day = get_static_day(X[:, 4: 4 + length])
+    elif attribution == "SO2":
+        if pos_station == "Gade":
+            X = data[:,:-2]
+            Y = data[:,-2]
+        data_2 = get_static(X[:, 4 + length * 2: 4 + length * 3])
+        static_day = get_static_day(X[:, 4: 4 + length])
+    elif attribution == "CO":
+        if pos_station == "Gade":
+            X = data[:,:-1]
+            Y = data[:,-1]
+        data_2 = get_static(X[:, 4 + length * 3: 4 + length * 4])
+        static_day = get_static_day(X[:, 4: 4 + length])
+    elif attribution == "O3":
+        if pos_station == "Tag":
+            X = data[:,:-1]
+            Y = data[:,-1]
+        data_2 = get_static(X[:, 4 + length * 2: 4 + length * 3])
+        static_day = get_static_day(X[:, 4: 4 + length])         
     # attr_need = ["PM25_Concentration","NO2_Concentration", "SO2_Concentration","CO_Concentration","O3_Concentration", "NOx_Concentration", 'time_year',
     #                 'time_month', 'time_day', 'time_week', 'time_hour']   
     #TODO onehot_mat don't think it is correct atm
     
-    data_1 = np.hstack((onehot_mat(X[:, :4], city), X[:, 4:], data_2, static_day))
+    data_1 = np.hstack((onehot_mat(X[:, :4], city,pos_station), X[:, 4:], data_2, static_day))
     X = data_1
     train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size=0.2, random_state=11)
     print (train_X.shape, test_X.shape, train_Y.shape, test_Y.shape)
@@ -204,13 +183,15 @@ def get_static_one_sample(data):
 
 
 # 模型预测
-def model_predict(tmp, reg, city, stations, attribution):
+#TODO if statement needed for pos_station
+def model_predict(tmp, reg, city,pos_station, stations, attribution):
     # print tmp[:4]
+
     one_hot_station_id = onehot(int(tmp[1] - 1), len(stations[city].keys()))
-    if city == 'bj':
+    if pos_station == 'Tag':
         one_hot_type_id = onehot(int(tmp[0] - 1), 4)
     else:
-        one_hot_type_id = onehot(int(tmp[0] - 1), 5)
+        one_hot_type_id = onehot(int(tmp[0] - 1), 3)
     one_hot_week = onehot(int(tmp[2]), 7)
     one_hot_hour = onehot(int(tmp[3]), 24)
     one_hot_all = np.hstack((one_hot_type_id, one_hot_station_id, one_hot_week, one_hot_hour))
@@ -231,19 +212,6 @@ def model_predict(tmp, reg, city, stations, attribution):
         static = get_static_one_sample(tmp[4 + length * 3: 4 + length * 4])
         static_day = get_static_one_sample_day(tmp[4 + length * 3: 4 + length * 4])
     
-    
-    
-    
-    
-    # if attribution == "PM25":
-    #     static = get_static_one_sample(tmp[4:4 + length])
-    #     static_day = get_static_one_sample_day(tmp[4:4 + length])
-    # elif attribution == "PM10":
-    #     static = get_static_one_sample(tmp[4 + length: 4 + length * 2])
-    #     static_day = get_static_one_sample_day(tmp[4 + length: 4 + length * 2])
-    # else:
-    #     static = get_static_one_sample(tmp[4 + length * 2: 4 + length * 3])
-    #     static_day = get_static_one_sample_day(tmp[4 + length * 2: 4 + length * 3])
     test_X = np.hstack((one_hot_all, tmp[4:], static, static_day))
     # print test_X
     pred = reg.predict([test_X])
@@ -256,11 +224,11 @@ def main(city,pos_station="Gade"):
     data = np.loadtxt(filename, delimiter=",")
     print (data)
     if pos_station=="Gade":      
-        attributions_list = ["NO2","SO2","CO","NOx"]
+        attributions_list = ["NO2","NOx","SO2","CO"]
         for attribution in attributions_list:
             run(data, attribution, city,pos_station)
     elif pos_station == "Tag":
-        attributions_list = ["NO2","O3","NOx"]
+        attributions_list = ["NO2", "NOx","O3",]
         for attribution in attributions_list:
             run(data, attribution, city,pos_station)
     #attribution = "PM10"
