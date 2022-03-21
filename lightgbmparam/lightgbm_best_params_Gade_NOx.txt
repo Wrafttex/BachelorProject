@@ -1,2 +1,0 @@
-city=Aalborg;pos_station=Gade;attr=NOx
-best_params{'lr': 0.005, 'depth': 10, 'tree': 473, 'leaf': 400, 'sample': 0.9, 'seed': 3}
