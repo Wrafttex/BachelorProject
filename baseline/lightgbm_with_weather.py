@@ -20,6 +20,7 @@ from data_processing import *
 import xgboost as xgb
 import lightgbm as lgb
 import pickle
+from numpy import savetxt
 
 
 #TODO add NOTE and DONE as a custom tag search todo-tree tag to be able to add it
@@ -393,6 +394,7 @@ def load_train_test(city, attr, type="0301-0531_0801-0410", load_from_feature_fi
         ans_X, ans_Y = change_X_Y(X, Y)
     train_X, test_X, train_Y, test_Y = train_test_split(ans_X, ans_Y, test_size=0.2, random_state=11)
     print (train_X.shape, test_X.shape, train_Y.shape, test_Y.shape)
+    input("waiting")
     return train_X, test_X, train_Y, test_Y
 
 
@@ -400,7 +402,7 @@ def get_score(pred, valid_y_exp):
     return np.mean(np.abs(pred - valid_y_exp) / (pred + valid_y_exp) * 2)
 
 
-model_param = {'lr': 0.01, 'depth': 10, 'tree': 5000, 'leaf': 400, 'sample': 0.9, 'seed': 3}
+model_param = {'lr': 0.1, 'depth': 10, 'tree': 5000, 'leaf': 400, 'sample': 0.9, 'seed': 3}
 params = {
     'task': 'train',
     'boosting_type': 'gbdt',
@@ -417,7 +419,7 @@ params = {
     'verbose': 0
 }
 
-model_param1 = {'lr': 0.05, 'depth': 10, 'tree': 1500, 'leaf': 400, 'sample': 0.9, 'seed': 3}
+model_param1 = {'lr': 0.1, 'depth': 10, 'tree': 1500, 'leaf': 400, 'sample': 0.9, 'seed': 3}
 params1 = {
     'task': 'train',
     'boosting_type': 'gbdt',
@@ -507,7 +509,7 @@ def cal_best_params(city, attr, type="0301-0531_0801-0410", load_from_feature_fi
     lgb_train = lgb.Dataset(train_X, train_Y)
     lgb_eval = lgb.Dataset(test_X, test_Y, reference=lgb_train)
 
-    model_param = {'lr': 0.005, 'depth': 10, 'tree': 1000, 'leaf': 400, 'sample': 0.9, 'seed': 3}
+    model_param = {'lr': 0.1, 'depth': 10, 'tree': 1000, 'leaf': 400, 'sample': 0.9, 'seed': 3}
     params = {
         'task': 'train',
         'boosting_type': 'gbdt',
@@ -648,13 +650,19 @@ def predict(city, length=24 * (3 * 7 + 2), start_day="2018-04-11", end_day="2018
         #tmp += values2
         #print(tmp.shape)
         tmp = np.array(tmp)
-        
+       
         if feature_first == False:
             NO2_feature = get_all_feature(np.array([tmp]), city, attr="NO2")
             NOx_feature = get_all_feature(np.array([tmp]), city, attr="NOx")
         else:
             NO2_feature = get_all_feature_1(np.array([tmp]), city, attr="NO2")
             NOx_feature = get_all_feature_1(np.array([tmp]), city, attr="NOx")
+        print("\n\n\n\n\n-----------------------")
+        print(change_feature(NO2_feature[0]).shape)
+        a = change_feature(NO2_feature[0])
+        a.tofile("change_feature.txt",sep=",",format="%s")
+        savetxt("change_f.csv",a,delimiter=",")
+        input("features")
         if nround is None:
             pred_NO2 = model_NO2.predict(change_feature(NO2_feature[0]), num_iteration=model_NO2.best_iteration)
             pred_NOx = model_NOx.predict(change_feature(NOx_feature[0]), num_iteration=model_NOx.best_iteration)
@@ -755,13 +763,13 @@ if __name__ == '__main__':
     city = "Aalborg"
     # get_train_test_data(city=city)
     attrs = ["NO2","NOx"]
-    # for attr in attrs:          
+    for attr in attrs:          
 
-    #     best_params = cal_best_params(city, attr, type="2017_0101-2018_0410_less", load_from_feature_file=False)
-    #     print (city, attr, best_params)
-    #     params_file = open("./lightgbmparam/lightgbm_best_params_"+attr+"_"+"2017_0101-2018_0410_less"+ ".txt", 'w+')
-    #     params_file.write("city=" + city + ";attr=" + attr + "\nbest_params" + str(best_params) + "\n")
-    #     params_file.close()
+        best_params = cal_best_params(city, attr, type="2017_0101-2018_0410_less", load_from_feature_file=False)
+        print (city, attr, best_params)
+        params_file = open("./lightgbmparam/lightgbm_best_params_"+attr+"_"+"2017_0101-2018_0410_less"+ ".txt", 'w+')
+        params_file.write("city=" + city + ";attr=" + attr + "\nbest_params" + str(best_params) + "\n")
+        params_file.close()
    
     type = "2017_0101-2018_0429_less"
     for attr in attrs:

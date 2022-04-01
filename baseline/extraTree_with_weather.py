@@ -19,9 +19,9 @@ from data_processing import *
 from unit import *
 import pickle
 
-base_path_1 = "../dataset/"
-base_path_2 = "../dataset/tmp/"
-base_path_3 = "../output/"
+base_path_1 = "./dataset/"
+base_path_2 = "./dataset/tmp/"
+base_path_3 = "./output/"
 
 station_id_change = {
     'miyunshuiku_aq': 'miyunshuik_aq',
@@ -35,123 +35,77 @@ station_id_change = {
 
 
 def get_train_test_data(city, length=24 * (3 * 7 + 2)):
-    weather_attr_need = ['temperature', 'pressure', 'humidity']
-    if city == 'bj':
-        attr_need = ["PM25_Concentration", "PM10_Concentration", "O3_Concentration"] \
-                    + ['time_year', 'time_month', 'time_day', 'time_week', 'time_hour']
-    else:
-        attr_need = ["PM25_Concentration", "PM10_Concentration"] \
-                    + ['time_year', 'time_month', 'time_day', 'time_week', 'time_hour']
+    #weather_attr_need = ['temperature', 'pressure', 'humidity']
+    attr_need = ["NO2_Concentration", "NOx_Concentration", 'time_year',
+                    'time_month', 'time_day', 'time_week', 'time_hour']  
 
     stations = load_station()
     filename = base_path_2 + "rate.pkl"
-    f1 = file(filename, 'rb')
+    f1 = open(filename, 'rb')
     loss_rate = pickle.load(f1)
 
-    ans_history = history_data(city=city, stations=stations, start_day="2017-01-01", end_day="2018-04-10")
-    weather_history = history_weather_data(city=city, start_day="2017-01-01", end_day="2018-04-10")
-    ans_current = get_all_processing_data(city, start_day="2018-04-11", end_day="2018-05-15")
-    weather_current = load_all_weather_data(city, start_day="2018-04-11", end_day="2018-05-15", crawl_data=False)
-    weather_data = pd.concat([weather_history, weather_current["2018-04-11":"2018-05-15"]], axis=0)
-    weather_groups = weather_data.groupby("station_id")
+    ans_history = history_data(city=city, stations=stations, start_day="2021-05-07", end_day="2022-01-14")
+    #weather_history = history_weather_data(city=city, start_day="2017-01-01", end_day="2018-04-10")
+    ans_current = get_all_processing_data(city, start_day="2022-01-15", end_day="2022-02-02")
+    #weather_current = load_all_weather_data(city, start_day="2018-04-11", end_day="2018-05-15", crawl_data=False)
+    #weather_data = pd.concat([weather_history, weather_current["2018-04-11":"2018-05-15"]], axis=0)
+    #weather_groups = weather_data.groupby("station_id")
     # print ans_history
     ans = []
     for station, group in ans_history.items():
-        grid_station = nearst[city][station]
-        weather_data = weather_groups.get_group(grid_station).sort_index()
+        #grid_station = nearst[city][station]
+        #weather_data = weather_groups.get_group(grid_station).sort_index()
         station_num_id = stations[city][station]["station_num_id"]
         station_type_id = stations[city][station]["type_id"]
-        if ans_current.has_key(station):
-            group = pd.concat([ans_history[station], ans_current[station]["2018-04-11":"2018-05-15"]],
+        if station in ans_current:
+            group = pd.concat([ans_history[station], ans_current[station]["2022-01-15":"2022-02-02"]],
                               axis=0).sort_index()
         else:
-            weather_data = weather_data[:"2018-04-10"]
+            print("oof")
         group = group.drop_duplicates()
         values = group[attr_need].values
-        weather_values = weather_data[weather_attr_need].values
-        print (values.shape, weather_values.shape)
-        values = np.hstack([values, weather_values])
+        #weather_values = weather_data[weather_attr_need].values
+        #print (values.shape, weather_values.shape)
+        values = np.hstack([values])
         for i in range(0, values.shape[0] - length + 1, 24):
             tmp = [station_num_id, station_type_id]
-            if city == "bj":
-                rate_flag = 0
-                avg_rate1 = 0.0
-                avg_rate2 = 0.0
-                avg_rate3 = 0.0
-                for j in range(23):
-                    year1 = values[i + length - 24 * (j + 1), 3]
-                    month1 = values[i + length - 24 * (j + 1), 4]
-                    day1 = values[i + length - 24 * (j + 1), 5]
-                    day = "%d-%02d-%02d" % (int(year1), int(month1), int(day1))
-                    if j < 2:
-                        if loss_rate[city][station][day]['all'] > 0.5:
-                            rate_flag = 1
-                            break
-                    elif j < 9:
-                        avg_rate1 += loss_rate[city][station][day]['all']
-                    elif j < 16:
-                        avg_rate2 += loss_rate[city][station][day]['all']
-                    else:
-                        avg_rate3 += loss_rate[city][station][day]['all']
-                if avg_rate1 / 7 > 0.60:
-                    continue
-                if avg_rate2 / 7 > 0.7:
-                    continue
-                if avg_rate3 / 7 > 0.75:
-                    continue
-                if rate_flag == 1:
-                    continue
-                pass
-            else:
-                rate_flag = 0
-                avg_rate1 = 0.0
-                avg_rate2 = 0.0
-                avg_rate3 = 0.0
-                for j in range(23):
-                    year1 = values[i + length - 24 * (j + 1), 2]
-                    month1 = values[i + length - 24 * (j + 1), 3]
-                    day1 = values[i + length - 24 * (j + 1), 4]
-                    day = "%d-%02d-%02d" % (int(year1), int(month1), int(day1))
-                    if j < 2:
-                        if loss_rate[city][station][day]['all'] > 0.50:
-                            rate_flag = 1
-                            break
-                    elif j < 9:
-                        avg_rate1 += loss_rate[city][station][day]['all']
-                    elif j < 16:
-                        avg_rate2 += loss_rate[city][station][day]['all']
-                    else:
-                        avg_rate3 += loss_rate[city][station][day]['all']
-                if avg_rate1 / 7 > 0.60:
-                    continue
-                if avg_rate2 / 7 > 0.70:
-                    continue
-                if avg_rate3 / 7 > 0.75:
-                    continue
-                if rate_flag == 1:
-                    continue
-            if city == "bj":
-                tmp += list(values[i + length - 24, 3: 7])
-                values2 = values[i: i + length - 48, :3]
-                values2 = list(values2.T.flatten())
-                tmp += values2
-                values2 = values[i: i + length, -3:]
-                values2 = list(values2.T.flatten())
-                tmp += values2
-                values2 = values[i + length - 48: i + length, :3]
-                values2 = list(values2.T.flatten())
-                tmp += values2
-            else:
-                tmp += list(values[i + length - 24, 2: 6])
-                values2 = values[i: i + length - 48, :2]
-                values2 = list(values2.T.flatten())
-                tmp += values2
-                values2 = values[i: i + length, -3:]
-                values2 = list(values2.T.flatten())
-                tmp += values2
-                values2 = values[i + length - 48:i + length, :2]
-                values2 = list(values2.T.flatten())
-                tmp += values2
+            rate_flag = 0
+            avg_rate1 = 0.0
+            avg_rate2 = 0.0
+            avg_rate3 = 0.0
+            for j in range(23):
+                year1 = values[i + length - 24 * (j + 1), 2]#
+                month1 = values[i + length - 24 * (j + 1), 3]
+                day1 = values[i + length - 24 * (j + 1), 4]
+                day = "%d-%02d-%02d" % (int(year1), int(month1), int(day1))
+                if j < 2:
+                    if loss_rate[city][station][day]['all'] > 0.50:
+                        rate_flag = 1
+                        break
+                elif j < 9:
+                    avg_rate1 += loss_rate[city][station][day]['all']
+                elif j < 16:
+                    avg_rate2 += loss_rate[city][station][day]['all']
+                else:
+                    avg_rate3 += loss_rate[city][station][day]['all']
+            if avg_rate1 / 7 > 0.60:
+                continue
+            if avg_rate2 / 7 > 0.70:
+                continue
+            if avg_rate3 / 7 > 0.75:
+                continue
+            if rate_flag == 1:
+                continue
+            tmp += list(values[i + length - 24, 2: 6])
+            values2 = values[i: i + length - 48, :2]
+            values2 = list(values2.T.flatten())
+            tmp += values2
+            #values2 = values[i: i + length, -3:]
+            #values2 = list(values2.T.flatten())
+            #tmp += values2
+            values2 = values[i + length - 48:i + length, :2]
+            values2 = list(values2.T.flatten())
+            tmp += values2
             # print tmp
             tmp = np.array(tmp)
             if np.isnan(tmp).sum() > 0:
@@ -369,10 +323,10 @@ def get_all_feature(data, city, attr="PM25", length=3 * 7 * 24):
     onehot_feature = get_onehot_feature(data[:, :6], city)
     if city == 'bj':
         holiday_weekend_feature = get_holiday_weekend(data[:, 2:6])
-    if attr == "PM25":
+    if attr == "NO2":
         static_feature = get_all_statistic_feature(data[:, 6: 6 + length])
         orign_data = np.hstack([data[:, 6 + 14 * 24: 6 + length], data[:, 6 + length + 18 * 24:6 + length * 2]])
-    elif attr == "PM10":
+    elif attr == "NOx":
         static_feature = get_all_statistic_feature(data[:, 6 + length: 6 + length * 2])
         orign_data = np.hstack([data[:, 6 + 18 * 24: 6 + length], data[:, 6 + length + 14 * 24:6 + length * 2]])
     else:
@@ -408,17 +362,9 @@ def load_train_test(city, attr, type="0301-0531_0801-0410", load_from_feature_fi
     else:
         X = np.loadtxt(base_path_2 + city + "_" + attr + '_training_feature_X_weather_' + type + '_1.csv',
                        delimiter=",")
-    if attr == "PM25":
-        if city == "bj":
-            Y = data[:, -48 * 3:-48 * 2]
-        else:
-            Y = data[:, -48 * 2:-48]
-    elif attr == "PM10":
-        if city == "bj":
-            Y = data[:, -48 * 2:-48]
-        else:
-            Y = data[:, -48:]
-    else:
+    if attr == "NO2":
+        Y = data[:, -48 * 2:-48]
+    elif attr == "NOx":
         Y = data[:, -48:]
     train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size=0.001, random_state=11)
     print (train_X.shape, test_X.shape, train_Y.shape, test_Y.shape)
@@ -474,43 +420,30 @@ def train(city, attr, best_params1=None, type="0301-0531_0801-0410", load_from_f
 def predict(city, length=24 * (3 * 7 + 2), start_day="2018-04-11", end_day="2018-04-11", type="0301-0531_0801-0410",
             feature_first=False, caiyun=False):
     weather_attr_need = ['temperature', 'pressure', 'humidity']
-    if city == 'bj':
-        attr_need = ["PM25_Concentration", "PM10_Concentration", "O3_Concentration", 'time_year',
-                     'time_month', 'time_day', 'time_week', 'time_hour']
-    else:
-        attr_need = ["PM25_Concentration", "PM10_Concentration", 'time_year', 'time_month',
-                     'time_day', 'time_week', 'time_hour']
+    attr_need = ["NO2_Concentration", "NOx_Concentration", 'time_year',
+                    'time_month', 'time_day', 'time_week', 'time_hour']  
+    
     stations = load_station()
     ans_history = history_data(city=city, stations=stations, start_day="2018-01-01", end_day="2018-04-10")
     ans_current = get_all_processing_data(city, start_day=start_day, end_day=end_day)
     # print ans_current
-    weather_history = history_weather_data(city=city, start_day="2018-01-01", end_day="2018-04-10")
-    weather_current = load_all_weather_data(city, start_day=start_day, end_day=end_day, crawl_data=False, caiyun=caiyun)
+    #weather_history = history_weather_data(city=city, start_day="2018-01-01", end_day="2018-04-10")
+    #weather_current = load_all_weather_data(city, start_day=start_day, end_day=end_day, crawl_data=False, caiyun=caiyun)
     # print weather_current
-    weather_data = pd.concat([weather_history, weather_current], axis=0)
-    weather_data = weather_data.drop_duplicates(["station_id", 'time'])
-    weather_groups = weather_data.groupby("station_id")
+    #weather_data = pd.concat([weather_history, weather_current], axis=0)
+    #weather_data = weather_data.drop_duplicates(["station_id", 'time'])
+    #weather_groups = weather_data.groupby("station_id")
     if feature_first == False:
-        model_PM25_file = base_path_2 + city + '_PM25_best_extraTree_with_weather_' + type + '_1.model'
+        model_NO2_file = base_path_2 + city + '_NO2_best_extraTree_with_weather_' + type + '_1.model'
+        model_NOx_file = base_path_2 + city + '_NOx_best_extraTree_with_weather_' + type + '_1.model'
     else:
-        model_PM25_file = base_path_2 + city + '_PM25_best_extraTree_with_weather_' + type + '.model'
-    model_PM25 = joblib.load(model_PM25_file)
-    if feature_first == False:
-        model_PM10_file = base_path_2 + city + '_PM10_best_extraTree_with_weather_' + type + '_1.model'
-    else:
-        model_PM10_file = base_path_2 + city + '_PM10_best_extraTree_with_weather_' + type + '.model'
-    model_PM10 = joblib.load(model_PM10_file)
-    if city == "bj":
-        if feature_first == False:
-            model_O3_file = base_path_2 + city + '_O3_best_extraTree_with_weather_' + type + '_1.model'
-        else:
-            model_O3_file = base_path_2 + city + '_O3_best_extraTree_with_weather_' + type + '.model'
-        model_O3 = joblib.load(model_O3_file)
+        model_NO2_file = base_path_2 + city + '_NO2_best_extraTree_with_weather_' + type + '.model'
+        model_NOx_file = base_path_2 + city + '_NOx_best_extraTree_with_weather_' + type + '.model'
+    model_NO2 = joblib.load(model_NO2_file)
+    model_NOx = joblib.load(model_NOx_file)
+    
     ans = ""
     for station in ans_history.keys():
-        if city == "ld":
-            if stations[city][station]["predict"] == False:
-                continue
         # group1 = ans_history[station]
         # group2 = ans_current[station]["2018-04-11":]
         station_num_id = stations[city][station]["station_num_id"]
@@ -518,60 +451,42 @@ def predict(city, length=24 * (3 * 7 + 2), start_day="2018-04-11", end_day="2018
         # print ans_current[station]["2018-04-11":]
         group = pd.concat([ans_history[station], ans_current[station]["2018-04-11":]], axis=0).sort_index()
         # print group
-        grid_station = nearst[city][station]
-        weather_data_tmp = weather_groups.get_group(grid_station).sort_index()
-        weather_data_tmp = weather_data_tmp.drop_duplicates(['time'])
+        #grid_station = nearst[city][station]
+        #weather_data_tmp = weather_groups.get_group(grid_station).sort_index()
+        #weather_data_tmp = weather_data_tmp.drop_duplicates(['time'])
         # print weather_data_tmp
         # print group
         values = group[attr_need].values
-        weather_values = weather_data_tmp[weather_attr_need].values
+        #weather_values = weather_data_tmp[weather_attr_need].values
         # print values.shape, weather_values.shape
-        values = np.hstack([values, weather_values])
+        values = np.hstack([values])
         # print values.shape
         i = values.shape[0] - length
         tmp = [station_num_id, station_type_id]
-        if city == "bj":
-            tmp += list(values[i + length - 24, 3: 7])
-            values2 = values[i: i + length - 48, :3]
-            values2 = list(values2.T.flatten())
-            tmp += values2
-            values2 = values[i: i + length, -3:]
-            values2 = list(values2.T.flatten())
-            tmp += values2
-        else:
-            tmp += list(values[i + length - 24, 2: 6])
-            values2 = values[i: i + length - 48, :2]
-            values2 = list(values2.T.flatten())
-            tmp += values2
-            values2 = values[i: i + length, -3:]
-            values2 = list(values2.T.flatten())
-            tmp += values2
+        tmp += list(values[i + length - 24, 2: 6])
+        values2 = values[i: i + length - 48, :2]
+        values2 = list(values2.T.flatten())
+        tmp += values2
+            #values2 = values[i: i + length, -3:]
+            #values2 = list(values2.T.flatten())
+            #tmp += values2
         # print tmp.shape
         tmp = np.array(tmp)
         # print tmp.shape
         if feature_first == False:
-            PM25_feature = get_all_feature(np.array([tmp]), city, attr="PM25")
-            PM10_feature = get_all_feature(np.array([tmp]), city, attr="PM10")
+            NO2_feature = get_all_feature(np.array([tmp]), city, attr="NO2")
+            NOx_feature = get_all_feature(np.array([tmp]), city, attr="NOx")
         else:
-            PM25_feature = get_all_feature_1(np.array([tmp]), city, attr="PM25")
-            PM10_feature = get_all_feature_1(np.array([tmp]), city, attr="PM10")
-        pred_PM25 = model_PM25.predict(PM25_feature)[0]
-        pred_PM10 = model_PM10.predict(PM10_feature)[0]
+            NO2_feature = get_all_feature_1(np.array([tmp]), city, attr="NO2")
+            NOx_feature = get_all_feature_1(np.array([tmp]), city, attr="NOx")
+        pred_NO2 = model_NO2.predict(NO2_feature)[0]
+        pred_NOx = model_NOx.predict(NOx_feature)[0]
         if station_id_change.has_key(station):
             station = station_id_change[station]
-        if city == "bj":
-            if feature_first == False:
-                O3_feature = get_all_feature(np.array([tmp]), city, attr="O3")
-            else:
-                O3_feature = get_all_feature_1(np.array([tmp]), city, attr="O3")
-            pred_O3 = model_O3.predict(O3_feature)[0]
-            for i in range(48):
-                ans += station + "#" + str(i) + "," + str(pred_PM25[i]) + "," + str(pred_PM10[i]) + "," + str(
-                    pred_O3[i]) + "\n"
+
                 # print tmp.shape
-        else:
-            for i in range(48):
-                ans += station + "#" + str(i) + "," + str(pred_PM25[i]) + "," + str(pred_PM10[i]) + ",0.0\n"
+        for i in range(48):
+            ans += station + "#" + str(i) + "," + str(pred_NO2[i]) + "," + str(pred_NOx[i]) + "\n"
     return ans
 
 
@@ -592,15 +507,15 @@ def get_ans(type, feature_first=False, start_day="2018-04-27", end_day="2018-04-
 
 def get_test(type, feature_first=False, caiyun=False):
     print (type)
-    for i in range(11, 28):
-        start_day = "2018-04-" + str(i)
-        end_day = "2018-04-" + str(i)
-        ans1 = predict(city='bj', start_day=start_day, end_day=end_day, type=type, feature_first=feature_first, caiyun=caiyun)
-        ans2 = predict(city='ld', start_day=start_day, end_day=end_day, type=type, feature_first=feature_first, caiyun=caiyun)
-        ans = "test_id,PM2.5,PM10,O3\n"
+    for i in range(15, 31):
+        start_day = "2022-01-" + str(i)
+        end_day = "2022-01-" + str(i)
+        ans1 = predict(city='Aalborg', start_day=start_day, end_day=end_day, type=type, feature_first=feature_first, caiyun=caiyun)
+        #ans2 = predict(city='ld', start_day=start_day, end_day=end_day, type=type, feature_first=feature_first, caiyun=caiyun)
+        ans = "test_id,NO2,NOx\n"
         ans_file = base_path_3 + "test/" + end_day + "-ext_with_weather_" + type + "_" + str(feature_first) + ".csv"
         f_to = open(ans_file, 'wb')
-        f_to.write(ans + ans1 + ans2)
+        f_to.write(ans + ans1)
         f_to.close()
 
 
@@ -613,20 +528,19 @@ def ext_with_weather_run(day1, day2, caiyun=False):
 
 
 if __name__ == '__main__':
+    city = "Aalborg"
     # city = "bj"
-    # get_train_test_data(city=city)
+    #get_train_test_data(city=city)
     # city = "ld"
     # get_train_test_data(city=city)
     cities = ['bj', 'ld']
-    attrs = ['PM25', 'PM10', 'O3']
-    type = "2017_0101-2018_0410_less"
-    # params_file = open("best_params"+ type +".txt", 'wb')
-    # for city in cities:
-    #     for attr in attrs:
-    #         if city == "ld" and attr == 'O3':
-    #             continue
-    #         best_params = params(city=city, attr=attr, type=type, load_from_feature_file=True)
-    #         params_file.write("city=" + city + ";attr=" + attr + "\nbest_params" + str(best_params) + "\n")
+    attrs = ['NO2', 'NOx']
+    type = "2017_0101-2018_0515_less"
+    #type = "2017_0101-2018_0410_less"
+    # params_file = open("best_params"+ type +".txt", 'w')
+    # for attr in attrs:
+    #     best_params = params(city=city, attr=attr, type=type, load_from_feature_file=False)
+    #     params_file.write("city=" + city + ";attr=" + attr + "\nbest_params" + str(best_params) + "\n")
     # params_file.close()
 
     best_params = {
@@ -643,6 +557,12 @@ if __name__ == '__main__':
                      'min_samples_leaf': 1},
             "PM10": {'max_features': None, 'min_samples_split': 2, 'n_estimators': 500, 'max_depth': 20,
                      'min_samples_leaf': 1}
+        },
+        "Aalborg":{
+            "NO2":{"max_features": None, 'min_samples_leaf': 5, 'min_samples_split': 5, 'n_estimators': 1000,'max_depth': 15,'min_samples_leaf': 1},
+            
+            "NOx":{'max_features': None, 'min_samples_leaf': 5, 'min_samples_split': 5, 'n_estimators': 500,'max_depth': 15,'min_samples_leaf': 1}
+            
         }
     }
     # type = "0301-0531_0801-0410"
@@ -692,7 +612,7 @@ if __name__ == '__main__':
     0.664834671091 0.605123504737 0.738706814966
 
     '''
-    type = "2017_0101-2018_0410_less"
+    #type = "2017_0101-2018_0410_less"
     '''
     0.438083523776
     0.543805846611
@@ -717,20 +637,15 @@ if __name__ == '__main__':
     #         print score
 
     # type = "0301-0531_0801-0410"
-    type = "2017_0101-2018_0429_less"
-    for city in cities:
-        for attr in attrs:
-            if city == "ld" and attr == 'O3':
-                continue
-            load_train_test(city, attr, type=type, load_from_feature_file=False)
+    # type = "2017_0101-2018_0429_less"
+    # for attr in attrs:
+    #     load_train_test(city, attr, type=type, load_from_feature_file=False)
 
-    for city in cities:
-        for attr in attrs:
-            if city == "ld" and attr == 'O3':
-                continue
-            score = train(city=city, attr=attr, best_params1=best_params[city][attr], type=type,
-                          load_from_feature_file=True)
-            print (score)
+    # # for city in cities:
+    # for attr in attrs:
+    #     score = train(city=city, attr=attr, best_params1=best_params[city][attr], type=type,
+    #                     load_from_feature_file=True)
+    #     print (score)
     # type = "2017_0101-2018_0410_less"
 
     # for city in cities:
@@ -778,4 +693,4 @@ if __name__ == '__main__':
     # get_test(type="0301-0531_0801-0410", feature_first=True)
     # get_test(type="2017_0101-2018_0410", feature_first=True)
     # get_test(type="2017_0101-2018_0410_less", feature_first=False)
-    get_test(type="2017_0101-2018_0429_less", feature_first=False)
+    get_test(type="2017_0101-2018_0515_less", feature_first=False)

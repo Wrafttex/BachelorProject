@@ -1,0 +1,4 @@
+city=Aalborg;attr=NO2
+best_params{'max_depth': 15, 'max_features': None, 'min_samples_leaf': 5, 'min_samples_split': 5, 'n_estimators': 1000}
+city=Aalborg;attr=NOx
+best_params{'max_depth': 15, 'max_features': None, 'min_samples_leaf': 5, 'min_samples_split': 5, 'n_estimators': 500}

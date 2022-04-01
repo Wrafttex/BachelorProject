@@ -89,7 +89,7 @@ def load_data(city, start_time, end_time, current_day=False):
 
 
 # 加载处理后的数据
-def load_data_process(city,pos_station="Gade", current_day=False):
+def load_data_process(city, current_day=False):
     if current_day == False:
         filename = base_path_2 + city+ "_airquality_processing.csv"
     else:
@@ -192,6 +192,10 @@ def pre_train(station_group, city, stations, attr_need, length, day=None):
         for i in range(0, values1.shape[0] - length):
             #print(i)
             # print i
+            #print(values1)
+            #input("values1")
+            #print(values1[i + length, -2:])
+            #input("values1[i + length, -2:]")
             tmp = [stations[city][station]["type_id"], stations[city][station]["station_num_id"]]
             tmp += list(values1[i + length, -2:])
             values2 = values1[i: i + length, :2]
@@ -241,12 +245,17 @@ def pre_train_data(station_group, stations, city, attr_need, length):
     #print(pos_station)
     for station, group in station_group.items():
         values1 = group[attr_need].values
+        #print(group[attr_need])
+        #input("values1")
+        #print(values1[i + length, -2:])
+        #input("values1[i + length, -2:]")
         # print "length: ", length
         # print "values1.shape", values1.shape
         for i in range(0, values1.shape[0] - length):
             tmp = [stations[city][station]["type_id"], stations[city][station]["station_num_id"]]
             tmp += list(values1[i + length, -2:])
-            #print(values1[i + length, -2:])
+            #print(tmp)
+            #input("tmp")
             values2 = values1[i: i + length, :2]
             values2 = list(values2.T.flatten())
             tmp += values2
@@ -689,13 +698,13 @@ if __name__ == '__main__':
     '''
     #loss_data_process_main(pre_train_flag=True)
     #pre_main("Aalborg")
-    #loss_data_process_main(pos_station="Gade",pre_train_flag=False)
+    loss_data_process_main(pre_train_flag=False)
 
     '''
     获取全部的数据
     利用前三预测后一个值来提交结果，迭代预测
     '''
-    post_data(city="Aalborg")
+    #post_data(city="Aalborg")
     #post_data(city="Aalborg",pos_station="Tag")
     # post_data(city="bj")
     #     model_1(city='bj')

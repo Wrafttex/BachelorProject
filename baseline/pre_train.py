@@ -55,7 +55,7 @@ length = 24 * 3
 params = {
     # 'objective': myObjective6,
     'max_depth': 10,
-    'learning_rate': 0.001,
+    'learning_rate': 0.1,
     # 'learning_rate': 0.02,
     'n_estimators': 3000,
     'gamma': 0.8,
@@ -102,6 +102,8 @@ def onehot_mat(data):
 #TODO attribute are hardcoded
 def run(data, attribution, city):
     start_time = time.time()
+    print(data[:,:5])
+    input("datashape")
     if attribution == "NO2":
         X = data[:, :-2]
         Y = data[:, -2]

@@ -19,9 +19,9 @@ import xgboost as xgb
 #from weather_data_processing import *
 
 
-base_path_1 = "../dataset/"
-base_path_2 = "../dataset/tmp/"
-base_path_3 = "../output/"
+base_path_1 = "./dataset/"
+base_path_2 = "./dataset/tmp/"
+base_path_3 = "./output/"
 
 station_id_change = {
     'miyunshuiku_aq': 'miyunshuik_aq',
@@ -344,27 +344,17 @@ def get_all_feature_1(data, city, attr="PM25", length=3 * 7 * 24):
 
 def get_all_feature(data, city, attr="PM25", length=3 * 7 * 24):
     onehot_feature = get_onehot_feature(data[:, :6], city)
-    if city == 'bj':
-        holiday_weekend_feature = get_holiday_weekend(data[:, 2:6])
-    if attr == "PM25":
+    if attr == "NO2":
         static_feature = get_all_statistic_feature(data[:, 6: 6 + length])
         orign_data = np.hstack([data[:, 6 + 14 * 24: 6 + length], data[:, 6 + length + 18 * 24:6 + length * 2]])
-    elif attr == "PM10":
+    elif attr == "NOx":
         static_feature = get_all_statistic_feature(data[:, 6 + length: 6 + length * 2])
         orign_data = np.hstack([data[:, 6 + 18 * 24: 6 + length], data[:, 6 + length + 14 * 24:6 + length * 2]])
-    else:
-        static_feature = get_all_statistic_feature(data[:, 6 + length * 2: 6 + length * 3])
-        orign_data = data[:, 6 + length * 2 + 14 * 24:6 + length * 3]
+
     # weather_feature = np.hstack(
     #     [data[:, 6 + length * 3 + 7 * 24: 6 + length * 4], data[:, 6 + length * 4 + 7 * 24: 6 + length * 5],
     #      data[:, 6 + length * 4 + 7 * 24: 6 + length * 5]])
-    if city == "bj":
-        all_feature = np.hstack(
-            (orign_data, data[:, 6 + length * 3:], holiday_weekend_feature, onehot_feature, static_feature))
-        # all_feature = np.hstack(
-        #     (orign_data, weather_feature, holiday_weekend_feature, onehot_feature, static_feature))
-    else:
-        all_feature = np.hstack((orign_data, data[:, 6 + length * 3:], onehot_feature, static_feature))
+    all_feature = np.hstack((orign_data, data[:, 6 + length * 3:], onehot_feature, static_feature))
         # all_feature = np.hstack((orign_data, weather_feature, onehot_feature, static_feature))
     return all_feature
     pass
@@ -383,29 +373,18 @@ def change_X_Y(X, Y):
 
 
 def load_train_test(city, attr, type="0301-0531_0801-0410", load_from_feature_file=False):
-    filename = base_path_2 + city + '_training_weather_' + type + '.csv'
+    filename = base_path_2 + city + '_training_weather_' + "0201-0531_0801-0429" + '.csv'#TODO hardcoded type for now
     data = np.loadtxt(filename, delimiter=",")
-    if city == "bj":
-        X_origin = data[:, :-48 * 3]
-    else:
-        X_origin = data[:, :-48 * 2]
+    X_origin = data[:, :-48 * 2]
     if load_from_feature_file == False:
         X = get_all_feature(X_origin, city, attr=attr)
         np.savetxt(base_path_2 + city + "_" + attr + '_training_feature_X_weather_' + type + '_1.csv', X, delimiter=',')
     else:
         X = np.loadtxt(base_path_2 + city + "_" + attr + '_training_feature_X_weather_' + type + '_1.csv',
                        delimiter=",")
-    if attr == "PM25":
-        if city == "bj":
-            Y = data[:, -48 * 3:-48 * 2]
-        else:
-            Y = data[:, -48 * 2:-48]
-    elif attr == "PM10":
-        if city == "bj":
-            Y = data[:, -48 * 2:-48]
-        else:
-            Y = data[:, -48:]
-    else:
+    if attr == "NO2":
+        Y = data[:, -48 * 2:-48]
+    elif attr == "NOx":
         Y = data[:, -48:]
     ans_X, ans_Y = change_X_Y(np.concatenate([X[:7900, :], X[-7900:, :]]), np.concatenate([Y[:7900, :], Y[-7900:, :]]))
     # ans_X, ans_Y = change_X_Y(np.concatenate([X[:, :], X[:, :]]), np.concatenate([Y[:, :], Y[:, :]]))
@@ -425,12 +404,12 @@ params = {
     'subsample': [i / 10.0 for i in range(6, 10)],
     'colsample_bytree': [i / 10.0 for i in range(6, 10)],
     'reg_alpha': [0, 0.001, 0.001],
-    'learning_rate': [0.001, 0.01, 0.1],
-    'n_estimators': [1000, 2000, 3000]
+    'learning_rate': [0.1],
+    'n_estimators': [100, 300, 500]
 }
 cv = ShuffleSplit(n_splits=5, test_size=0.1, random_state=2)
 CLF = GridSearchCV(
-    estimator=xgb.XGBRegressor(learning_rate=0.001, n_estimators=3000, max_depth=10, min_child_weight=2,
+    estimator=xgb.XGBRegressor(learning_rate=0.1, n_estimators=500, max_depth=10, min_child_weight=2,
                                reg_alpha=0.001, gamma=0.6, subsample=0.8, colsample_bytree=0.8, scale_pos_weight=1,
                                seed=27), param_grid=params, scoring=scoring, n_jobs=-1, cv=cv, verbose=6)
 
@@ -630,16 +609,13 @@ if __name__ == '__main__':
     # get_train_test_data(city=city)
     # city = "ld"
     # get_train_test_data(city=city)
-    cities = ['bj', 'ld']
-    attrs = ['PM25', 'PM10', 'O3']
-    # params_file = open("xgboost_best_params.txt", 'wb')
-    # for city in cities:
-    #     for attr in attrs:
-    #         if city == "ld" and attr == 'O3':
-    #             continue
-    #         best_params = params(city=city, attr=attr)
-    #         params_file.write("city=" + city + ";attr=" + attr + "\nbest_params" + str(best_params) + "\n")
-    # params_file.close()
+    city = "Aalborg"
+    attrs = ['NO2', 'NOx']
+    params_file = open("xgboost_best_params.txt", 'wb')
+    for attr in attrs:
+        best_params = params(city=city, attr=attr)
+        params_file.write("city=" + city + ";attr=" + attr + "\nbest_params" + str(best_params) + "\n")
+    params_file.close()
 
     type = "0301-0531_0801-0410"
     type = "0201-0531_0801-0429"

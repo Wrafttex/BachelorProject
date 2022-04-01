@@ -477,7 +477,7 @@ def get_ans(end_day="2018-05-08", caiyun=False):
         file5 = base_path_3 + end_day + "lightgbm_mean_ensemble_0429_caiyun.csv"
         file6 = base_path_3 + end_day + "lightgbm_median_ensemble_0429_caiyun.csv"
 
-    ensemble_median(file1, file2, file3, file4, file5, file6)
+    #ensemble_median(file1, file2, file3, file4, file5, file6)
     time.sleep(1000000)
 
     if caiyun == False:

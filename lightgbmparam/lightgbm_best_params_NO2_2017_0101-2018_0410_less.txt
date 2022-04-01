@@ -1,2 +1,2 @@
 city=Aalborg;attr=NO2
-best_params{'lr': 0.005, 'depth': 10, 'tree': 728, 'leaf': 400, 'sample': 0.9, 'seed': 3}
+best_params{'lr': 0.1, 'depth': 10, 'tree': 39, 'leaf': 400, 'sample': 0.9, 'seed': 3}

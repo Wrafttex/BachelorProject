@@ -3,14 +3,14 @@ from __future__ import print_function
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
-from fancyimpute import BiScaler, KNN, NuclearNormMinimization, SoftImpute, MICE
+from fancyimpute import BiScaler, KNN, NuclearNormMinimization, SoftImpute,IterativeImputer
 from nose.tools import eq_
-import cPickle as pickle
+import pickle as pickle
 import xlrd
 
-base_path_1 = "../dataset/"
-base_path_2 = "../dataset/tmp/"
-base_path_3 = "../output/"
+base_path_1 = "./dataset/"
+base_path_2 = "./dataset/tmp/"
+base_path_3 = "./output/"
 
 
 def load_station():
@@ -105,14 +105,11 @@ def RFImputer(Ximp):
 
 def loss_data_day(city):
     filename = base_path_2 + city + "_airquality_processing.csv"
-    if city == 'bj':
-        attr_need = ["PM25_Concentration", "PM10_Concentration", "O3_Concentration"]
-    else:
-        attr_need = ["PM25_Concentration", "PM10_Concentration"]
+    attr_need = ["NO2_Concentration", "NOx_Concentration"]
     df1 = pd.read_csv(filename, sep=',')
     df1['time'] = pd.to_datetime(df1['time'])
     df1.index = df1['time']
-    df2 = pd.read_csv(base_path_2 + city + "_airquality_current_day.csv", sep=',')
+    df2 = pd.read_csv(base_path_2 + city + "_current_day_processing.csv", sep=',')
     df2['time'] = pd.to_datetime(df2['time'])
     df2.index = df2['time']
     df2['time_week'] = df2.index.map(lambda x: x.weekday)
@@ -125,17 +122,14 @@ def loss_data_day(city):
     loss_rate = {}
     for (station_id, year, month, day), group in groups:
         value = group[attr_need].values
-        if loss_rate.has_key(station_id) == False:
+        if station_id not in loss_rate:
             loss_rate[station_id] = {}
         day = "%d-%02d-%02d" % (int(year), int(month), int(day))
         loss_rate[station_id][day] = {}
-        rate_PM25 = np.isnan(value[:, 0]).sum() * 1.0 / (value.shape[0])
-        rate_PM10 = np.isnan(value[:, 1]).sum() * 1.0 / (value.shape[0])
-        loss_rate[station_id][day]["PM25"] = rate_PM25
-        loss_rate[station_id][day]["PM10"] = rate_PM10
-        if city == "bj":
-            rate_O3 = np.isnan(value[:, 2]).sum() * 1.0 / (value.shape[0])
-            loss_rate[station_id][day]["O3"] = rate_O3
+        rate_NO2 = np.isnan(value[:, 0]).sum() * 1.0 / (value.shape[0])
+        rate_NOx = np.isnan(value[:, 1]).sum() * 1.0 / (value.shape[0])
+        loss_rate[station_id][day]["NO2"] = rate_NO2
+        loss_rate[station_id][day]["NOx"] = rate_NOx
         loss_rate[station_id][day]["all"] = np.isnan(value).sum() * 1.0 / (value.shape[0] * value.shape[1])
     return loss_rate
     # print(value)
@@ -167,17 +161,17 @@ def impute(city, methods="KNN"):
         if methods == "KNN":
             XY_completed = KNN(k=5).complete(XY_incomplete)
         # print(XY_completed)
-        if methods == "MICE":
+        if methods == "IterativeImputer":
             # print(XY_incomplete)
             try:
-                XY_completed = MICE(n_imputations=100).complete(XY_incomplete)
+                XY_completed = IterativeImputer(n_imputations=100).complete(XY_incomplete)
             except:
                 continue
         # print(XY_completed)
         group.loc[:, attr_need] = XY_completed
         stations_group[station] = group
-    import cPickle as pickle
-    f1 = file(base_path_3 + city + '_data_history_'+methods+'.pkl', 'wb')
+    import pickle as pickle
+    f1 = open(base_path_3 + city + '_data_history_'+methods+'.pkl', 'wb')
     pickle.dump(stations_group, f1, True)
 
 
@@ -188,10 +182,9 @@ def impute(city, methods="KNN"):
 
 def get_loss_rate():
     filename = base_path_2 + "rate.pkl"
-    f1 = file(filename, 'wb')
+    f1 = open(filename, 'wb')
     loss_rate = {}
-    loss_rate['bj'] = loss_data_day(city='bj')
-    loss_rate['ld'] = loss_data_day(city='ld')
+    loss_rate['Aalborg'] = loss_data_day(city='Aalborg')
     pickle.dump(loss_rate, f1, True)
 
 
