@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Bachelor Porject</title>
+
+        <link rel= "stylesheet" type="text/css" href= "{{ url_for('static',filename='styles/stylesheet.css') }}">
+
+    </head>
+
+    <body>
+        <nav>Bachelor Porject</nav>
+    
+        <div class="chartDiv" >
+            <div class="chartContent">
+                <h1>Tag Data</h1>    
+                <div id="graph0">
+                    {{ graph0 | safe}}
+                </div>
+            </div>
+            <div class="chartContent">
+                <h1>Gade Data</h1>    
+                <div id="graph1">
+                    
+                </div>
+            </div>
+        </div>
+        
+    </body>
+</html> 
