@@ -1,0 +1,3 @@
+id,api_data,need_prediction,historical_data,Latitude,Longitude,SiteType,SiteName
+Gade,NaN,True,True,57.050974,9.916690,Gadestation,Vesterbro
+Tag,NaN,True,True,57.046927,9.931002,Bybaggrundsstation,Oesterbro
