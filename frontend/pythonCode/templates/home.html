@@ -18,16 +18,25 @@
             <div class="chartContent">
                 <h1>Tag Data</h1>    
                 <div id="graph0">
-                    {{ graph0 | safe}}
                 </div>
             </div>
             <div class="chartContent">
                 <h1>Gade Data</h1>    
-                <div id="graph1">
-                    
+                <div id="graph1">                 
                 </div>
             </div>
         </div>
         
     </body>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <script type='text/javascript'>
+        var graph0 = {{ graphJSON0|safe }}
+        var graph1 = {{ graphJSON1|safe }}
+
+        Plotly.newPlot("graph0", graph0, {}, {displayModeBar: false});
+        Plotly.newPlot("graph1", graph1, {}, {displayModeBar: false});    
+    </script>
+
 </html> 
