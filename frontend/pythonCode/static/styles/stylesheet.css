@@ -1,0 +1,47 @@
+@font-face {
+    font-family: 'Product Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Open Sans'), local('OpenSans'), url(https://fonts.gstatic.com/s/productsans/v5/HYvgU2fE2nRJvZ5JFAumwegdm0LZdjqr5-oayXSOefg.woff2) format('woff2');
+  }
+  
+body {
+    font-family: "Product Sans";
+    background-color: rgb(55,55,55);
+    align-content: center;
+}
+
+nav {
+    position: relative;
+    font-size: 4.5rem;
+    background-color: rgb(45,45,45);;
+    width: 100%;
+    text-align: center;
+    color: black;
+}
+
+button {
+    font-family: "Product Sans";
+    background-color: rgb(55,55,55);
+    padding: 5px;
+    border-radius: 25px;
+}
+
+.charDiv {
+   margin: auto;
+   align-content: center;
+   position: relative;
+}
+
+.chartContent {
+    width: 95%;
+    border-radius: 25px;
+    padding: 0px 10px 10px 10px;
+    text-align: center;
+    color: black;
+    background-color: rgb(60,60,60);
+    margin: auto;
+    position: relative;
+}
+
+

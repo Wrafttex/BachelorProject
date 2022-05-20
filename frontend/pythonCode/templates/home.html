@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Bachelor Porject</title>
+
+        <link rel= "stylesheet" type="text/css" href= "{{ url_for('static',filename='styles/stylesheet.css') }}">
+
+    </head>
+
+    <body>
+        <nav>Bachelor Porject</nav>
+    
+        <div class="chartDiv" >
+            <div class="chartContent">
+                <div>
+                    <h1>Tag Data</h1>
+                    <button id="button0" onclick=displayLightGBMTag()>LightGBM</button>
+                    <button id="button1" onclick=displayLSTMTag()>LSTM</button>
+                </div>
+                <div id="graph0">
+                </div>
+            </div>
+            <div class="chartContent">
+                <div>
+                    <h1>Gade Data</h1>
+                    <button id="button2" onclick=displayLightGBMGade()>LightGBM</button>
+                    <button id="button3" onclick=displayLSTMGade()>LSTM</button>
+                </div>
+                <div id="graph1">                 
+                </div>
+            </div>
+        </div>
+        
+    </body>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <script type='text/javascript'>
+        var graph0 = {{ graphJSON0|safe }}
+        var graph1 = {{ graphJSON1|safe }}
+        var graph2 = {{ graphJSON2|safe }}
+        var graph3 = {{ graphJSON3|safe }}
+
+        displayLSTMGade()
+        displayLSTMTag()
+
+        function displayLightGBMTag() {
+            Plotly.newPlot("graph0", graph0, {}, {displayModeBar: false});
+            document.getElementById("button0").style.backgroundColor = "rgb(65,65,65)"; 
+        }
+
+        function displayLightGBMGade() {
+            Plotly.newPlot("graph1", graph1, {}, {displayModeBar: false}); 
+        }
+
+        function displayLSTMTag() {
+            Plotly.newPlot("graph0", graph2, {}, {displayModeBar: false});
+        }
+
+        function displayLSTMGade() {
+            Plotly.newPlot("graph1", graph3, {}, {displayModeBar: false}); 
+        }
+
+    </script>
+</html> 
