@@ -50,19 +50,26 @@
 
         function displayLightGBMTag() {
             Plotly.newPlot("graph0", graph0, {}, {displayModeBar: false});
-            document.getElementById("button0").style.backgroundColor = "rgb(65,65,65)"; 
+            document.getElementById("button0").style.backgroundColor = "green";
+            document.getElementById("button1").style.backgroundColor = "rgb(55,55,55)"; 
         }
 
         function displayLightGBMGade() {
             Plotly.newPlot("graph1", graph1, {}, {displayModeBar: false}); 
+            document.getElementById("button2").style.backgroundColor = "green"; 
+            document.getElementById("button3").style.backgroundColor = "rgb(55,55,55)"; 
         }
 
         function displayLSTMTag() {
             Plotly.newPlot("graph0", graph2, {}, {displayModeBar: false});
+            document.getElementById("button1").style.backgroundColor = "green"; 
+            document.getElementById("button0").style.backgroundColor = "rgb(55,55,55)"; 
         }
 
         function displayLSTMGade() {
             Plotly.newPlot("graph1", graph3, {}, {displayModeBar: false}); 
+            document.getElementById("button3").style.backgroundColor = "green"; 
+            document.getElementById("button2").style.backgroundColor = "rgb(55,55,55)"; 
         }
 
     </script>

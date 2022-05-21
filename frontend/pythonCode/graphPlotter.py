@@ -5,7 +5,7 @@ import numpy as np
 import plotly.graph_objects as go
 import json
 import plotly
-LGBMTagPredictData, LGBMTagRealData, LGBMGadePredictData, LGBMGadeRealData, LSTMTagPredictData, LSTMTTagRealData, LSTMTGadePredictData, LSTMTGadeRealData = dataHandler()
+LGBMTagPredictData, LGBMTagRealData, LGBMGadePredictData, LGBMGadeRealData, LSTMTagPredictData, LSTMTTagRealData, LSTMTGadePredictData, LSTMTGadeRealData, LGBM24TagPredictData, LGBM24TagRealData, LGBM24GadePredictData, LGBM24GadeRealData = dataHandler()
 
 def remove_odd(l):
     return [x for x in l if x % 2 == 0]
